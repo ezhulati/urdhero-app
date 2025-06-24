@@ -1,0 +1,30 @@
+{
+  "name": "urdhero-functions",
+  "description": "Cloud Functions for Urdhero Albania",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.5.0",
+    "joi": "^17.11.0",
+    "qrcode": "^1.5.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/qrcode": "^1.5.5",
+    "@types/uuid": "^9.0.7",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}

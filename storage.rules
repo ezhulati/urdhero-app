@@ -1,0 +1,24 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // QR codes can be read by anyone but only written by the backend
+    match /qr-codes/{venueId}/{fileName} {
+      allow read;
+      allow write: if false; // Only written by Cloud Functions
+    }
+    
+    // Venue images
+    match /venues/{venueId}/{fileName} {
+      allow read;
+      allow write: if request.auth.token.venueId == venueId && 
+                     request.auth.token.role in ['admin', 'manager'];
+    }
+    
+    // Menu item images
+    match /menu-items/{venueId}/{fileName} {
+      allow read;
+      allow write: if request.auth.token.venueId == venueId && 
+                     request.auth.token.role in ['admin', 'manager', 'staff'];
+    }
+  }
+}

@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function hasVenueRole(venueId) {
+      return isAuthenticated() && 
+             request.auth.token.venueId == venueId && 
+             request.auth.token.role in ['admin', 'manager', 'staff'];
+    }
+    
+    function isVenueAdmin(venueId) {
+      return isAuthenticated() && 
+             request.auth.token.venueId == venueId && 
+             request.auth.token.role == 'admin';
+    }
+    
+    function isVenueManagerOrAdmin(venueId) {
+      return isAuthenticated() && 
+             request.auth.token.venueId == venueId && 
+             request.auth.token.role in ['admin', 'manager'];
+    }
+    
+    function isOrderOwner(orderNumber) {
+      return isAuthenticated() && request.auth.uid != null && 
+             ('orderNumber' in request.auth.token && 
+             request.auth.token.orderNumber == orderNumber);
+    }
+
+    // Public venue and menu access
+    match /venues/{venueId} {
+      // Venues are readable by anyone (needed for QR landing page), writable by admins
+      allow read;
+      allow create: if false; // Creation only via Cloud Function
+      allow update: if isVenueAdmin(venueId);
+      allow delete: if false; // Deletion not allowed via client
+      
+      // Menu categories and items are readable by anyone
+      match /menuCategories/{categoryId} {
+        allow read;
+        allow write: if hasVenueRole(venueId);
+      }
+      
+      match /menuItems/{menuItemId} {
+        allow read;
+        allow create, update: if hasVenueRole(venueId);
+        allow delete: if isVenueManagerOrAdmin(venueId);
+      }
+      
+      // Tables can be read by venue staff, but only admins/managers can create/modify
+      match /tables/{tableId} {
+        allow read;
+        allow create, update: if isVenueManagerOrAdmin(venueId);
+        allow delete: if isVenueAdmin(venueId);
+      }
+    }
+    
+    // Orders collection
+    match /orders/{orderId} {
+      // Anyone can create an order (public endpoint)
+      allow create;
+      
+      // Orders can be read by venue staff or by the customer who placed it
+      allow read: if hasVenueRole(resource.data.venueId) || 
+                  (resource.data.orderNumber == request.auth.token.orderNumber);
+      
+      // Only venue staff can update orders
+      allow update: if hasVenueRole(resource.data.venueId);
+      allow delete: if isVenueAdmin(resource.data.venueId);
+    }
+    
+    // Users collection (for storing additional customer data)
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
+    }
+    
+    // For analytics - only accessible by venue admins and managers
+    match /analytics/{docId} {
+      allow read: if resource.data.venueId == request.auth.token.venueId &&
+                  request.auth.token.role in ['admin', 'manager'];
+      allow write: if false; // Only written by Cloud Functions
+    }
+  }
+}
