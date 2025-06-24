@@ -1,0 +1,32 @@
+{
+  "name": "Urdhëro - Platforma #1 për Restorante në Shqipëri",
+  "short_name": "Urdhëro",
+  "description": "Urdhëro direkt nga tavolina me QR kod. Platforma më e avancuar për restorante në Shqipëri.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "sq",
+  "categories": ["food", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

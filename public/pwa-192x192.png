@@ -1,0 +1,40 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pwa192Bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1d4ed8"/>
+      <stop offset="25%" stopColor="#1e40af"/>
+      <stop offset="75%" stopColor="#312e81"/>
+      <stop offset="100%" stopColor="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="pwa192Highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="rgba(255,255,255,0.25)"/>
+      <stop offset="50%" stopColor="rgba(255,255,255,0.08)"/>
+      <stop offset="100%" stopColor="rgba(255,255,255,0.03)"/>
+    </linearGradient>
+    <filter id="shadow192">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Main circle with shadow -->
+  <circle cx="96" cy="96" r="88" fill="url(#pwa192Bg)" filter="url(#shadow192)"/>
+  
+  <!-- Highlight overlay -->
+  <circle cx="96" cy="96" r="85" fill="url(#pwa192Highlight)"/>
+  
+  <!-- Inner border for depth -->
+  <circle cx="96" cy="96" r="82" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+  
+  <!-- Professional U letter -->
+  <path 
+    d="M48 38 L48 90 C48 112 66 130 88 130 L104 130 C126 130 144 112 144 90 L144 38 M58 38 L58 90 C58 106 71 119 88 119 L104 119 C121 119 134 106 134 90 L134 38"
+    stroke="white" 
+    strokeWidth="12" 
+    strokeLinecap="round" 
+    fill="none"
+  />
+  
+  <!-- Premium accent dot -->
+  <circle cx="134" cy="48" r="7" fill="#10b981"/>
+  <circle cx="134" cy="48" r="5" fill="#34d399"/>
+</svg>

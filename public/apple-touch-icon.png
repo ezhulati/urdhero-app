@@ -1,0 +1,45 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="appleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1d4ed8"/>
+      <stop offset="30%" stopColor="#1e40af"/>
+      <stop offset="70%" stopColor="#312e81"/>
+      <stop offset="100%" stopColor="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="appleHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="rgba(255,255,255,0.3)"/>
+      <stop offset="50%" stopColor="rgba(255,255,255,0.1)"/>
+      <stop offset="100%" stopColor="rgba(255,255,255,0.05)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer glow -->
+  <circle cx="90" cy="90" r="85" fill="url(#appleBg)" opacity="0.3" filter="url(#glow)"/>
+  
+  <!-- Main circle -->
+  <circle cx="90" cy="90" r="80" fill="url(#appleBg)" stroke="#1e40af" strokeWidth="3"/>
+  
+  <!-- Highlight overlay -->
+  <circle cx="90" cy="90" r="77" fill="url(#appleHighlight)"/>
+  
+  <!-- Professional U -->
+  <path 
+    d="M45 35 L45 85 C45 105 60 120 80 120 L100 120 C120 120 135 105 135 85 L135 35 M55 35 L55 85 C55 99 66 110 80 110 L100 110 C114 110 125 99 125 85 L125 35"
+    stroke="white" 
+    strokeWidth="12" 
+    strokeLinecap="round" 
+    fill="none"
+    filter="url(#glow)"
+  />
+  
+  <!-- Premium accent -->
+  <circle cx="125" cy="45" r="8" fill="#10b981" filter="url(#glow)"/>
+  <circle cx="125" cy="45" r="6" fill="#34d399"/>
+</svg>

@@ -1,0 +1,57 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pwa512Bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1d4ed8"/>
+      <stop offset="20%" stopColor="#1e40af"/>
+      <stop offset="60%" stopColor="#312e81"/>
+      <stop offset="100%" stopColor="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="pwa512Highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="rgba(255,255,255,0.3)"/>
+      <stop offset="40%" stopColor="rgba(255,255,255,0.12)"/>
+      <stop offset="100%" stopColor="rgba(255,255,255,0.02)"/>
+    </linearGradient>
+    <linearGradient id="pwa512Inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#2563eb"/>
+      <stop offset="50%" stopColor="#1e40af"/>
+      <stop offset="100%" stopColor="#312e81"/>
+    </linearGradient>
+    <filter id="shadow512">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" floodOpacity="0.4"/>
+    </filter>
+    <filter id="letterShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer glow ring -->
+  <circle cx="256" cy="256" r="250" fill="url(#pwa512Bg)" opacity="0.2"/>
+  
+  <!-- Main circle with shadow -->
+  <circle cx="256" cy="256" r="240" fill="url(#pwa512Bg)" filter="url(#shadow512)"/>
+  
+  <!-- Highlight overlay -->
+  <circle cx="256" cy="256" r="235" fill="url(#pwa512Highlight)"/>
+  
+  <!-- Inner circle for depth -->
+  <circle cx="256" cy="256" r="220" fill="url(#pwa512Inner)" opacity="0.8"/>
+  
+  <!-- Multiple inner borders for premium feel -->
+  <circle cx="256" cy="256" r="215" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+  
+  <!-- Professional U letter with shadow -->
+  <path 
+    d="M128 100 L128 240 C128 300 176 348 236 348 L276 348 C336 348 384 300 384 240 L384 100 M154 100 L154 240 C154 286 190 322 236 322 L276 322 C322 322 358 286 358 240 L358 100"
+    stroke="white" 
+    strokeWidth="32" 
+    strokeLinecap="round" 
+    fill="none"
+    filter="url(#letterShadow)"
+  />
+  
+  <!-- Premium accent with glow -->
+  <circle cx="358" cy="128" r="20" fill="#10b981" filter="url(#letterShadow)"/>
+  <circle cx="358" cy="128" r="16" fill="#34d399"/>
+  <circle cx="358" cy="128" r="12" fill="#6ee7b7" opacity="0.8"/>
+</svg>
