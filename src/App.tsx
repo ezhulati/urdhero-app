@@ -1,8 +1,11 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useLanguage, Language } from './hooks/useTranslation';
 import { getTranslation } from './translations';
+
+// Components
+import { InstallPrompt } from './components/ui/InstallPrompt';
 
 // Customer Pages
 import { UserSelectionPage } from './pages/UserSelectionPage';
@@ -60,6 +63,22 @@ const TranslationProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 function App() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <TranslationProvider>
       <ErrorBoundary>
@@ -67,6 +86,13 @@ function App() {
           <div className="App">
             {/* Developer Navigation Bar */}
             <DeveloperBar />
+            
+            {/* Offline Warning */}
+            {!isOnline && (
+              <div className="bg-yellow-500 text-white text-center py-2 px-4 fixed top-0 left-0 right-0 z-50">
+                You are currently offline. Some features may not be available.
+              </div>
+            )}
             
             <Routes>
               {/* Main Entry Point */}
@@ -91,7 +117,7 @@ function App() {
               
               {/* Catch-all route */}
               <Route path="*" element={
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                   <div className="text-center max-w-md mx-auto px-4">
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                       <span className="text-3xl">🔍</span>
@@ -108,6 +134,9 @@ function App() {
                 </div>
               } />
             </Routes>
+            
+            {/* PWA Install Prompt */}
+            <InstallPrompt />
             
             {/* Toast Notifications */}
             <Toaster

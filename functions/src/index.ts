@@ -10,6 +10,8 @@ export * from './orders';
 export * from './menu';
 export * from './tables';
 export * from './analytics';
+export * from './payments';
+export * from './performance';
 
 // Ensure Firestore settings are optimal
 const db = admin.firestore();
