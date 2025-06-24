@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Clock, CheckCircle, XCircle, TrendingUp, Users, LogOut, Settings, CreditCard, BarChart3, Package, Home, QrCode } from 'lucide-react';
+import { Bell, Clock, CheckCircle, XCircle, TrendingUp, Users, LogOut, Settings, CreditCard, BarChart3, Package, Home, QrCode, Utensils } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -11,6 +11,7 @@ import { PaymentSettings } from '../../components/restaurant/PaymentSettings';
 import { WaiterCallManager } from '../../components/restaurant/WaiterCallManager';
 import { AnalyticsDashboard } from '../../components/analytics/AnalyticsDashboard';
 import { InventoryDashboard } from '../../components/inventory/InventoryDashboard';
+import { MenuManagement } from '../../components/restaurant/MenuManagement';
 import { useRestaurantDashboard } from '../../hooks/useRestaurantDashboard';
 import { Order, OrderStatus, Restaurant, PaymentMethod } from '../../types';
 import { auth } from '../../firebase/config';
@@ -20,7 +21,7 @@ import toast from 'react-hot-toast';
 export const RestaurantDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [activeTab, setActiveTab] = useState<'orders' | 'analytics' | 'inventory' | 'settings' | 'waiter-calls' | 'qr-codes'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'analytics' | 'inventory' | 'settings' | 'waiter-calls' | 'qr-codes' | 'menu'>('orders');
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const venueId = 'beach-bar-durres'; // In a real app, get this from auth state
 
@@ -190,6 +191,17 @@ export const RestaurantDashboardPage: React.FC = () => {
             <span>Orders</span>
           </button>
           <button
+            onClick={() => setActiveTab('menu')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
+              activeTab === 'menu'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Utensils className="w-4 h-4" />
+            <span>Menu</span>
+          </button>
+          <button
             onClick={() => setActiveTab('analytics')}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
               activeTab === 'analytics'
@@ -246,7 +258,9 @@ export const RestaurantDashboardPage: React.FC = () => {
           </button>
         </div>
 
-        {activeTab === 'inventory' ? (
+        {activeTab === 'menu' ? (
+          <MenuManagement venueId={restaurant?.id} />
+        ) : activeTab === 'inventory' ? (
           <InventoryDashboard />
         ) : activeTab === 'analytics' ? (
           <AnalyticsDashboard restaurantId={restaurant?.id || '1'} />
