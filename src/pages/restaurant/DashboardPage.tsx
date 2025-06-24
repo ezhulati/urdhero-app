@@ -11,40 +11,44 @@ import { PaymentSettings } from '../../components/restaurant/PaymentSettings';
 import { WaiterCallManager } from '../../components/restaurant/WaiterCallManager';
 import { AnalyticsDashboard } from '../../components/analytics/AnalyticsDashboard';
 import { InventoryDashboard } from '../../components/inventory/InventoryDashboard';
+import { useRestaurantDashboard } from '../../hooks/useRestaurantDashboard';
 import { Order, OrderStatus, Restaurant, PaymentMethod } from '../../types';
+import { auth } from '../../firebase/config';
+import { signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
 export const RestaurantDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
   const [activeTab, setActiveTab] = useState<'orders' | 'analytics' | 'inventory' | 'settings' | 'waiter-calls' | 'qr-codes'>('orders');
-  const [stats, setStats] = useState({
-    today: { orders: 0, revenue: 0 },
-    pending: 0,
-    avgTime: 0
-  });
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const venueId = 'beach-bar-durres'; // In a real app, get this from auth state
+
+  const { 
+    orders, 
+    filteredOrders, 
+    loading, 
+    stats, 
+    filter, 
+    setFilter, 
+    updateOrderStatus,
+    loadAnalytics 
+  } = useRestaurantDashboard(venueId);
 
   useEffect(() => {
     // Check authentication
-    const auth = localStorage.getItem('restaurant-auth');
-    if (!auth) {
-      navigate('/restaurant/login');
-      return;
-    }
-
-    loadDashboardData();
-  }, [navigate]);
-
-  const loadDashboardData = async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock restaurant data
-      const mockRestaurant: Restaurant = {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/restaurant/login');
+        return;
+      }
+      
+      // In a real app, we'd check the custom claims here to verify venue access
+      // For demo, we're proceeding regardless
+      setIsAuthChecking(false);
+      
+      // Load restaurant data - in a real app, this would come from Firestore
+      setRestaurant({
         id: '1',
         emri: 'Beach Bar Durrës',
         slug: 'beach-bar-durres',
@@ -62,121 +66,21 @@ export const RestaurantDashboardPage: React.FC = () => {
         eshteAktiv: true,
         krijuarNe: new Date(),
         perditesuesNe: new Date()
-      };
-
-      // Mock orders data with Urdhëro branding
-      const mockOrders: Order[] = [
-        {
-          id: '1',
-          numriPorosise: 'UR-001',
-          restorantiId: '1',
-          tavolinaId: '1',
-          emriTavolines: 'Tavolina A15',
-          artikujt: [
-            { menuItemId: '1', emriArtikulli: 'Aperol Spritz', sasia: 2, cmimiNjesi: 850, cmimiTotal: 1700 },
-            { menuItemId: '2', emriArtikulli: 'Pizza Margherita', sasia: 1, cmimiNjesi: 1200, cmimiTotal: 1200 }
-          ],
-          shumaTotale: 2900,
-          statusi: OrderStatus.E_RE,
-          krijuarNe: new Date(Date.now() - 5 * 60 * 1000),
-          metodaPageses: PaymentMethod.KESH,
-          eshtePagetuar: false,
-          burimiPorosise: 'urdhero_qr',
-          versioni: 1
-        },
-        {
-          id: '2',
-          numriPorosise: 'UR-002',
-          restorantiId: '1',
-          tavolinaId: '2',
-          emriTavolines: 'Tavolina B08',
-          artikujt: [
-            { menuItemId: '3', emriArtikulli: 'Sallata Greke', sasia: 1, cmimiNjesi: 900, cmimiTotal: 900 },
-            { menuItemId: '4', emriArtikulli: 'Kafe Espresso', sasia: 2, cmimiNjesi: 200, cmimiTotal: 400 }
-          ],
-          shumaTotale: 1300,
-          statusi: OrderStatus.DUKE_U_PERGATITUR,
-          krijuarNe: new Date(Date.now() - 15 * 60 * 1000),
-          pranusNe: new Date(Date.now() - 12 * 60 * 1000),
-          duke_u_pergatitNe: new Date(Date.now() - 8 * 60 * 1000),
-          metodaPageses: PaymentMethod.KARTE,
-          eshtePagetuar: false,
-          burimiPorosise: 'urdhero_qr',
-          versioni: 1
-        },
-        {
-          id: '3',
-          numriPorosise: 'UR-003',
-          restorantiId: '1',
-          tavolinaId: '3',
-          emriTavolines: 'Tavolina C12',
-          artikujt: [
-            { menuItemId: '5', emriArtikulli: 'Peshk i Grilluar', sasia: 1, cmimiNjesi: 1800, cmimiTotal: 1800 }
-          ],
-          shumaTotale: 1800,
-          statusi: OrderStatus.GATI,
-          krijuarNe: new Date(Date.now() - 25 * 60 * 1000),
-          pranusNe: new Date(Date.now() - 22 * 60 * 1000),
-          duke_u_pergatitNe: new Date(Date.now() - 18 * 60 * 1000),
-          gatiNe: new Date(Date.now() - 2 * 60 * 1000),
-          metodaPageses: PaymentMethod.KESH,
-          eshtePagetuar: false,
-          burimiPorosise: 'urdhero_qr',
-          versioni: 1
-        }
-      ];
-
-      setRestaurant(mockRestaurant);
-      setOrders(mockOrders);
-      
-      // Calculate stats
-      setStats({
-        today: { orders: 42, revenue: 89500 },
-        pending: mockOrders.filter(o => o.statusi !== OrderStatus.SHERBYER).length,
-        avgTime: 18
       });
-    } catch (error) {
-      toast.error('Gabim në ngarkimin e të dhënave');
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+    
+    return () => unsubscribe();
+  }, [navigate]);
 
-  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+  const handleLogout = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setOrders(prev => prev.map(order => 
-        order.id === orderId 
-          ? { ...order, statusi: newStatus, [`${newStatus}Ne`]: new Date() }
-          : order
-      ));
-
-      toast.success('Statusi u përditësua me sukses në Urdhëro');
+      await signOut(auth);
+      navigate('/');
+      toast.success('Successfully signed out');
     } catch (error) {
-      toast.error('Gabim në përditësimin e statusit');
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
     }
-  };
-
-  const updatePaymentSettings = async (newSettings: Restaurant['paymentSettings']) => {
-    if (!restaurant) return;
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setRestaurant(prev => prev ? { ...prev, paymentSettings: newSettings } : null);
-      toast.success('Cilësimet e pagesës u përditësuan me sukses në Urdhëro');
-    } catch (error) {
-      toast.error('Gabim në përditësimin e cilësimeve');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('restaurant-auth');
-    navigate('/');
-    toast.success('Dolët me sukses nga Urdhëro');
   };
 
   const formatPrice = (price: number) => {
@@ -203,45 +107,51 @@ export const RestaurantDashboardPage: React.FC = () => {
   const getStatusText = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.E_RE:
-        return 'E re';
+        return 'New';
       case OrderStatus.PRANUAR:
-        return 'Pranuar';
+        return 'Accepted';
       case OrderStatus.DUKE_U_PERGATITUR:
-        return 'Në përgatitje';
+        return 'Preparing';
       case OrderStatus.GATI:
-        return 'Gati';
+        return 'Ready';
       case OrderStatus.SHERBYER:
-        return 'Shërbyer';
+        return 'Served';
+      case OrderStatus.ANULUAR:
+        return 'Cancelled';
       default:
-        return 'I panjohur';
+        return 'Unknown';
     }
   };
 
   const getTimeAgo = (date: Date) => {
     const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
-    return `${minutes} min më parë`;
+    return `${minutes} min ago`;
   };
 
-  const filteredOrders = filter === 'all' 
-    ? orders 
-    : orders.filter(order => order.statusi === filter);
-
   const filterOptions = [
-    { value: 'all', label: 'Të gjitha', count: orders.length },
-    { value: OrderStatus.E_RE, label: 'Të reja', count: orders.filter(o => o.statusi === OrderStatus.E_RE).length },
-    { value: OrderStatus.PRANUAR, label: 'Pranuar', count: orders.filter(o => o.statusi === OrderStatus.PRANUAR).length },
-    { value: OrderStatus.DUKE_U_PERGATITUR, label: 'Në përgatitje', count: orders.filter(o => o.statusi === OrderStatus.DUKE_U_PERGATITUR).length },
-    { value: OrderStatus.GATI, label: 'Gati', count: orders.filter(o => o.statusi === OrderStatus.GATI).length }
+    { value: 'all', label: 'All', count: orders.length },
+    { value: OrderStatus.E_RE, label: 'New', count: orders.filter(o => o.statusi === OrderStatus.E_RE).length },
+    { value: OrderStatus.PRANUAR, label: 'Accepted', count: orders.filter(o => o.statusi === OrderStatus.PRANUAR).length },
+    { value: OrderStatus.DUKE_U_PERGATITUR, label: 'Preparing', count: orders.filter(o => o.statusi === OrderStatus.DUKE_U_PERGATITUR).length },
+    { value: OrderStatus.GATI, label: 'Ready', count: orders.filter(o => o.statusi === OrderStatus.GATI).length }
   ];
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Checking authentication..." />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Dashboard Urdhëro për Restorante" />
+        <Header title="Restaurant Dashboard" />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4" />
-            <p className="text-gray-600">Duke ngarkuar dashboard-in e Urdhëro...</p>
+            <p className="text-gray-600">Loading dashboard data...</p>
           </div>
         </div>
       </div>
@@ -250,7 +160,7 @@ export const RestaurantDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Dashboard Urdhëro për Restorante">
+      <Header title="Restaurant Dashboard">
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
@@ -260,7 +170,7 @@ export const RestaurantDashboardPage: React.FC = () => {
             icon={<LogOut className="w-4 h-4" />}
             iconPosition="left"
           >
-            Dil
+            Sign Out
           </Button>
         </div>
       </Header>
@@ -277,7 +187,7 @@ export const RestaurantDashboardPage: React.FC = () => {
             }`}
           >
             <Bell className="w-4 h-4" />
-            <span>Porositë Urdhëro</span>
+            <span>Orders</span>
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
@@ -321,7 +231,7 @@ export const RestaurantDashboardPage: React.FC = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Thirrjet</span>
+            <span>Calls</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -332,7 +242,7 @@ export const RestaurantDashboardPage: React.FC = () => {
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>Cilësimet Urdhëro</span>
+            <span>Settings</span>
           </button>
         </div>
 
@@ -367,7 +277,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">{stats.today.orders}</div>
-                    <div className="text-sm text-gray-600">Porosi sot në Urdhëro</div>
+                    <div className="text-sm text-gray-600">Orders today</div>
                   </div>
                 </div>
               </Card>
@@ -379,7 +289,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">{formatPrice(stats.today.revenue)}</div>
-                    <div className="text-sm text-gray-600">Shitje sot</div>
+                    <div className="text-sm text-gray-600">Revenue today</div>
                   </div>
                 </div>
               </Card>
@@ -391,7 +301,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">{stats.pending}</div>
-                    <div className="text-sm text-gray-600">Në pritje</div>
+                    <div className="text-sm text-gray-600">Pending</div>
                   </div>
                 </div>
               </Card>
@@ -403,7 +313,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">{stats.avgTime}min</div>
-                    <div className="text-sm text-gray-600">Koha mesatare</div>
+                    <div className="text-sm text-gray-600">Average time</div>
                   </div>
                 </div>
               </Card>
@@ -432,10 +342,10 @@ export const RestaurantDashboardPage: React.FC = () => {
                 <Card className="p-8">
                   <EmptyState
                     icon="📋"
-                    title="Asnjë porosi Urdhëro"
-                    description={filter === 'all' ? "Nuk ka porosi për momentin." : `Nuk ka porosi me statusin "${filterOptions.find(f => f.value === filter)?.label}".`}
-                    actionLabel="Rifresko"
-                    onAction={loadDashboardData}
+                    title="No orders"
+                    description={filter === 'all' ? "There are currently no orders." : `No orders with "${filterOptions.find(f => f.value === filter)?.label}" status.`}
+                    actionLabel="Refresh"
+                    onAction={() => window.location.reload()}
                   />
                 </Card>
               ) : (
@@ -452,10 +362,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                           </Badge>
                           <Badge variant="neutral" size="sm">
                             <CreditCard className="w-3 h-3 mr-1" />
-                            {order.metodaPageses === PaymentMethod.KESH ? 'Kesh' : 'Kartë'}
-                          </Badge>
-                          <Badge variant="gradient" size="sm">
-                            Urdhëro
+                            {order.metodaPageses === PaymentMethod.KESH ? 'Cash' : 'Card'}
                           </Badge>
                         </div>
                         <div className="text-sm text-gray-600 mb-2">
@@ -472,11 +379,11 @@ export const RestaurantDashboardPage: React.FC = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateOrderStatus(order.id, OrderStatus.ANULUAR)}
+                              onClick={() => updateOrderStatus(order.id, OrderStatus.ANULUAR, "Item out of stock")}
                               icon={<XCircle className="w-4 h-4" />}
                               iconPosition="left"
                             >
-                              Refuzo
+                              Reject
                             </Button>
                             <Button
                               size="sm"
@@ -484,7 +391,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                               icon={<CheckCircle className="w-4 h-4" />}
                               iconPosition="left"
                             >
-                              Prano
+                              Accept
                             </Button>
                           </>
                         )}
@@ -496,7 +403,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                             icon={<Clock className="w-4 h-4" />}
                             iconPosition="left"
                           >
-                            Fillo Përgatitjen
+                            Start Preparing
                           </Button>
                         )}
                         
@@ -508,7 +415,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                             icon={<CheckCircle className="w-4 h-4" />}
                             iconPosition="left"
                           >
-                            Shëno Gati
+                            Mark Ready
                           </Button>
                         )}
                         
@@ -520,7 +427,7 @@ export const RestaurantDashboardPage: React.FC = () => {
                             icon={<Users className="w-4 h-4" />}
                             iconPosition="left"
                           >
-                            Shërbyer
+                            Mark Served
                           </Button>
                         )}
                       </div>
@@ -554,7 +461,11 @@ export const RestaurantDashboardPage: React.FC = () => {
           restaurant && (
             <PaymentSettings
               restaurant={restaurant}
-              onUpdate={updatePaymentSettings}
+              onUpdate={(settings) => {
+                // In a real app, this would update Firestore
+                setRestaurant({...restaurant, paymentSettings: settings});
+                toast.success('Payment settings updated');
+              }}
             />
           )
         )}

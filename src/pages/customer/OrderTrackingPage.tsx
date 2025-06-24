@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Clock, ChefHat, Utensils, MapPin, Phone, MessageCircle, Star, Share2, Home, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Clock, ChefHat, Utensils, MapPin, Phone, Star, Share2, Home } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -10,110 +10,24 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
-import { Order, OrderStatus } from '../../types';
+import { useOrderTracking } from '../../hooks/useOrderTracking';
+import { OrderStatus } from '../../types';
 import toast from 'react-hot-toast';
 
 export const OrderTrackingPage: React.FC = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useCustomerAuth();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
+  const { order, loading, error, progress, estimatedTime, callWaiter } = useOrderTracking(orderNumber || '');
   const [showFeedback, setShowFeedback] = useState(false);
   const [rating, setRating] = useState(0);
 
-  useEffect(() => {
-    if (!orderNumber) {
-      navigate('/');
-      return;
+  // Show feedback form when order is ready
+  React.useEffect(() => {
+    if (order?.statusi === OrderStatus.GATI) {
+      setShowFeedback(true);
     }
-
-    loadOrder();
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(loadOrder, 30000);
-    return () => clearInterval(interval);
-  }, [orderNumber, navigate]);
-
-  useEffect(() => {
-    if (order) {
-      updateProgress();
-    }
-  }, [order]);
-
-  const loadOrder = async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock order data
-      const mockOrder: Order = {
-        id: orderNumber!,
-        numriPorosise: orderNumber!,
-        restorantiId: '1',
-        tavolinaId: '1',
-        emriTavolines: 'Table A15',
-        artikujt: [
-          {
-            menuItemId: '1',
-            emriArtikulli: 'Aperol Spritz',
-            sasia: 2,
-            cmimiNjesi: 850,
-            cmimiTotal: 1700
-          },
-          {
-            menuItemId: '2',
-            emriArtikulli: 'Pizza Margherita',
-            sasia: 1,
-            cmimiNjesi: 1200,
-            cmimiTotal: 1200
-          }
-        ],
-        shumaTotale: 2900,
-        statusi: Math.random() > 0.3 ? OrderStatus.DUKE_U_PERGATITUR : OrderStatus.GATI,
-        krijuarNe: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-        pranusNe: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
-        duke_u_pergatitNe: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-        metodaPageses: 'kesh' as any,
-        eshtePagetuar: false,
-        burimiPorosise: 'qr_code',
-        versioni: 1
-      };
-
-      setOrder(mockOrder);
-    } catch (err) {
-      setError('An error occurred while loading the order');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProgress = () => {
-    if (!order) return;
-
-    let progressValue = 0;
-    switch (order.statusi) {
-      case OrderStatus.E_RE:
-        progressValue = 20;
-        break;
-      case OrderStatus.PRANUAR:
-        progressValue = 40;
-        break;
-      case OrderStatus.DUKE_U_PERGATITUR:
-        progressValue = 70;
-        break;
-      case OrderStatus.GATI:
-      case OrderStatus.SHERBYER:
-        progressValue = 100;
-        if (order.statusi === OrderStatus.GATI) {
-          setShowFeedback(true);
-        }
-        break;
-    }
-    setProgress(progressValue);
-  };
+  }, [order?.statusi]);
 
   const formatPrice = (price: number) => {
     return (price / 100).toFixed(2);
@@ -202,10 +116,6 @@ export const OrderTrackingPage: React.FC = () => {
     }
   };
 
-  const handleCallWaiter = () => {
-    toast.success('Staff will assist you shortly!');
-  };
-
   const handleShareOrder = () => {
     if (navigator.share) {
       navigator.share({
@@ -288,7 +198,6 @@ export const OrderTrackingPage: React.FC = () => {
   }
 
   const currentStepIndex = getCurrentStepIndex();
-  const estimatedTime = order.statusi === OrderStatus.GATI ? 0 : Math.max(5, 20 - Math.floor((Date.now() - order.krijuarNe.getTime()) / 60000));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -493,7 +402,7 @@ export const OrderTrackingPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3 mb-6">
             <Button
               variant="outline"
-              onClick={handleCallWaiter}
+              onClick={callWaiter}
               icon={<Phone className="w-4 h-4" />}
               iconPosition="left"
             >
@@ -501,7 +410,7 @@ export const OrderTrackingPage: React.FC = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/menu?r=beach-bar-durres&t=A15')}
+              onClick={() => navigate(`/menu?r=${order.venueInfo?.slug || 'beach-bar-durres'}&t=${order.tableInfo?.id || 'A15'}`)}
               icon={<Utensils className="w-4 h-4" />}
               iconPosition="left"
             >
