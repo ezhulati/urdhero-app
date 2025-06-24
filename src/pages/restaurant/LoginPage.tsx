@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/layout/Header';
-import { UrdheroLogo } from '../../components/ui/UrdheroLogo';
+import { useRestaurantAuth } from '../../hooks/useRestaurantAuth';
 import toast from 'react-hot-toast';
 
 export const RestaurantLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { login, currentUser, loading: authLoading } = useRestaurantAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -22,24 +23,14 @@ export const RestaurantLoginPage: React.FC = () => {
 
   // Check if already logged in
   useEffect(() => {
-    const authData = localStorage.getItem('restaurant-auth');
-    if (authData) {
-      const parsed = JSON.parse(authData);
-      // Check if login is recent (within 24 hours)
-      const loginTime = new Date(parsed.loginTime);
-      const now = new Date();
-      const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceLogin < 24) {
-        // Auto-redirect to appropriate page
-        if (role === 'kitchen' || parsed.role === 'kitchen') {
-          navigate('/restaurant/kitchen');
-        } else {
-          navigate('/restaurant/dashboard');
-        }
-      }
+    if (currentUser) {
+      const redirectPath = role === 'kitchen' 
+        ? '/restaurant/kitchen'
+        : '/restaurant/dashboard';
+        
+      navigate(redirectPath);
     }
-  }, [navigate, role]);
+  }, [currentUser, navigate, role]);
 
   // Demo credentials
   const demoCredentials = {
@@ -62,15 +53,15 @@ export const RestaurantLoginPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email është i detyrueshëm';
+      newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Format i email-it nuk është i vlefshëm';
+      newErrors.email = 'Invalid email format';
     }
 
     if (!formData.password) {
-      newErrors.password = 'Fjalëkalimi është i detyrueshëm';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Fjalëkalimi duhet të ketë të paktën 6 karaktere';
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     setErrors(newErrors);
@@ -87,41 +78,20 @@ export const RestaurantLoginPage: React.FC = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Check demo credentials
-      const validCredentials = Object.values(demoCredentials).some(
-        cred => cred.email === formData.email && cred.password === formData.password
-      );
-
-      if (!validCredentials) {
-        setErrors({
-          general: 'Email ose fjalëkalim i pasaktë. Provoni kredencialet demo.'
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Store auth state
-      localStorage.setItem('restaurant-auth', JSON.stringify({
-        email: formData.email,
-        role: role,
-        loginTime: new Date().toISOString()
-      }));
-
-      toast.success('Keni hyrë me sukses në Urdhëro!');
+      const claims = await login(formData.email, formData.password);
       
-      // Redirect based on role
-      if (role === 'kitchen') {
+      // Redirect based on role and custom claims
+      if (role === 'kitchen' || claims.role === 'kitchen') {
         navigate('/restaurant/kitchen');
       } else {
         navigate('/restaurant/dashboard');
       }
     } catch (error) {
+      // Error handling already done in the hook with toast notifications
       setErrors({
-        general: 'Ndodhi një gabim gjatë hyrjes në Urdhëro. Provoni përsëri.'
+        general: 'Login failed. Please check your credentials.'
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -131,16 +101,16 @@ export const RestaurantLoginPage: React.FC = () => {
     setErrors({});
   };
 
-  const roleLabels = {
+  const roleLabels: Record<string, string> = {
     admin: 'Administrator',
-    staff: 'Personeli',
-    kitchen: 'Kuzhina'
+    staff: 'Staff',
+    kitchen: 'Kitchen'
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        title={`Hyrje Urdhëro - ${roleLabels[role as keyof typeof roleLabels]}`} 
+        title={`Restaurant Login - ${roleLabels[role] || 'Staff'}`} 
         showBack 
         onBackClick={() => navigate('/')}
       />
@@ -150,16 +120,15 @@ export const RestaurantLoginPage: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <UrdheroLogo size="lg" showText={false} />
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-white" />
+              </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Mirë se erdhe në Urdhëro
+              Staff Login
             </h1>
             <p className="text-gray-600">
-              Hyr në sistemin e menaxhimit të restorantit
-            </p>
-            <p className="text-sm text-blue-700 font-medium mt-1">
-              Platform për Restorante
+              Access restaurant management system
             </p>
           </div>
 
@@ -183,7 +152,7 @@ export const RestaurantLoginPage: React.FC = () => {
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                       : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                   }`}
-                  placeholder="emri@restorant.al"
+                  placeholder="email@restaurant.com"
                 />
               </div>
               {errors.email && (
@@ -194,7 +163,7 @@ export const RestaurantLoginPage: React.FC = () => {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Fjalëkalimi
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -209,7 +178,7 @@ export const RestaurantLoginPage: React.FC = () => {
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                       : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                   }`}
-                  placeholder="Fjalëkalimi juaj"
+                  placeholder="Your password"
                 />
                 <button
                   type="button"
@@ -235,17 +204,28 @@ export const RestaurantLoginPage: React.FC = () => {
             <Button
               type="submit"
               loading={loading}
-              className="w-full bg-gradient-to-r from-blue-800 to-indigo-800 hover:from-blue-900 hover:to-indigo-900"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               size="lg"
             >
-              Hyr në Urdhëro
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
+            
+            {/* Forgot Password */}
+            <div className="text-center">
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:text-blue-800"
+                onClick={() => navigate('/restaurant/forgot-password')}
+              >
+                Forgot password?
+              </button>
+            </div>
           </form>
 
           {/* Demo Credentials */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600 text-center mb-4">
-              Kredenciale demo për testim në Urdhëro:
+              Demo credentials for testing:
             </p>
             <div className="space-y-2">
               {Object.entries(demoCredentials).map(([type, creds]) => (
@@ -264,7 +244,7 @@ export const RestaurantLoginPage: React.FC = () => {
           {/* Branding Footer */}
           <div className="mt-6 pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500">
-              Powered by Urdhëro Platform 🇦🇱
+              Powered by Urdhëro Platform
             </p>
           </div>
         </Card>
