@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Clock, ChefHat, Utensils, MapPin, Phone, MessageCircle, Star, Share2, Home } from 'lucide-react';
+import { CheckCircle, Clock, ChefHat, Utensils, MapPin, Phone, MessageCircle, Star, Share2, Home, ArrowLeft } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ProgressBar } from '../../components/ui/ProgressBar';
+import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
+import { useCustomerAuth } from '../../hooks/useCustomerAuth';
 import { Order, OrderStatus } from '../../types';
 import toast from 'react-hot-toast';
 
 export const OrderTrackingPage: React.FC = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useCustomerAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,13 +48,13 @@ export const OrderTrackingPage: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Mock order data with Urdhëro branding
+      // Mock order data
       const mockOrder: Order = {
         id: orderNumber!,
         numriPorosise: orderNumber!,
         restorantiId: '1',
         tavolinaId: '1',
-        emriTavolines: 'Tavolina A15',
+        emriTavolines: 'Table A15',
         artikujt: [
           {
             menuItemId: '1',
@@ -81,7 +84,7 @@ export const OrderTrackingPage: React.FC = () => {
 
       setOrder(mockOrder);
     } catch (err) {
-      setError('Ndodhi një gabim gjatë ngarkimit të porosisë');
+      setError('An error occurred while loading the order');
     } finally {
       setLoading(false);
     }
@@ -138,46 +141,46 @@ export const OrderTrackingPage: React.FC = () => {
   const getStatusText = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.E_RE:
-        return 'Porosi e re';
+        return 'New order';
       case OrderStatus.PRANUAR:
-        return 'Pranuar';
+        return 'Accepted';
       case OrderStatus.DUKE_U_PERGATITUR:
-        return 'Duke u përgatitur';
+        return 'Preparing';
       case OrderStatus.GATI:
-        return 'Gati për shërbim';
+        return 'Ready';
       case OrderStatus.SHERBYER:
-        return 'Shërbyer';
+        return 'Served';
       case OrderStatus.ANULUAR:
-        return 'Anulluar';
+        return 'Cancelled';
       default:
-        return 'I panjohur';
+        return 'Unknown';
     }
   };
 
   const orderSteps = [
     { 
       key: OrderStatus.E_RE, 
-      label: 'Porosi e re', 
+      label: 'New order', 
       icon: Clock,
-      description: 'Porosia u dërgua me sukses në Urdhëro' 
+      description: 'Order successfully placed' 
     },
     { 
       key: OrderStatus.PRANUAR, 
-      label: 'Pranuar', 
+      label: 'Accepted', 
       icon: CheckCircle,
-      description: 'Restoranti pranoi porosinë' 
+      description: 'Venue accepted your order' 
     },
     { 
       key: OrderStatus.DUKE_U_PERGATITUR, 
-      label: 'Duke u përgatitur', 
+      label: 'Preparing', 
       icon: ChefHat,
-      description: 'Kuzhina po përgatit porosinë' 
+      description: 'Kitchen is preparing your order' 
     },
     { 
       key: OrderStatus.GATI, 
-      label: 'Gati', 
+      label: 'Ready', 
       icon: Utensils,
-      description: 'Porosia është gati për shërbim' 
+      description: 'Order is ready for service' 
     }
   ];
 
@@ -200,25 +203,25 @@ export const OrderTrackingPage: React.FC = () => {
   };
 
   const handleCallWaiter = () => {
-    toast.success('Kamarierin do t\'ju ndihmojë së shpejti!');
+    toast.success('Staff will assist you shortly!');
   };
 
   const handleShareOrder = () => {
     if (navigator.share) {
       navigator.share({
-        title: `Porosia #${orderNumber}`,
-        text: `Ndiqni porosinë time në Urdhëro`,
+        title: `Order #${orderNumber}`,
+        text: `Track my order`,
         url: window.location.href
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success('Linku u kopjua në clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
   const handleRating = (stars: number) => {
     setRating(stars);
-    toast.success(`Faleminderit për vlerësimin ${stars} ⭐!`);
+    toast.success(`Thank you for your ${stars} ⭐ rating!`);
     // In real app, this would send rating to backend
   };
 
@@ -238,11 +241,11 @@ export const OrderTrackingPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Ndjekja e Porosisë" showBack onBackClick={handleBackClick} />
+        <Header title="Order Tracking" showBack onBackClick={handleBackClick} />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
-            <LoadingSpinner size="lg" className="mb-4" text="Duke ngarkuar..." />
-            <p className="text-gray-600">Po kontrollojmë statusin e porosisë suaj</p>
+            <LoadingSpinner size="lg" className="mb-4" text="Loading..." />
+            <p className="text-gray-600">Checking your order status</p>
           </div>
         </div>
       </div>
@@ -252,7 +255,7 @@ export const OrderTrackingPage: React.FC = () => {
   if (error || !order) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Ndjekja e Porosisë" showBack onBackClick={handleBackClick} />
+        <Header title="Order Tracking" showBack onBackClick={handleBackClick} />
         
         <div className="max-w-md mx-auto px-4 pt-8">
           <Card className="text-center p-8">
@@ -260,10 +263,10 @@ export const OrderTrackingPage: React.FC = () => {
               <span className="text-2xl">❌</span>
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Porosia nuk u gjet
+              Order not found
             </h2>
             <p className="text-gray-600 mb-6">
-              {error || 'Numri i porosisë nuk është i vlefshëm.'}
+              {error || 'The order number is not valid.'}
             </p>
             <div className="space-y-3">
               <Button 
@@ -272,10 +275,10 @@ export const OrderTrackingPage: React.FC = () => {
                 icon={<Home className="w-4 h-4" />}
                 iconPosition="left"
               >
-                Kthehu në Shtëpi
+                Return Home
               </Button>
               <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
-                Provo Përsëri
+                Try Again
               </Button>
             </div>
           </Card>
@@ -289,7 +292,7 @@ export const OrderTrackingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Ndjekja e Porosisë" showBack onBackClick={handleBackClick} />
+      <Header title="Order Tracking" showBack onBackClick={handleBackClick} />
       
       <motion.div 
         className="max-w-md mx-auto px-4 pt-6 pb-8"
@@ -297,6 +300,18 @@ export const OrderTrackingPage: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Customer Status Banner */}
+        <CustomerStatusBanner 
+          user={user}
+          isAuthenticated={isAuthenticated}
+          currentOrder={{
+            orderNumber: order.numriPorosise,
+            status: order.statusi,
+            estimatedTime: estimatedTime > 0 ? estimatedTime : undefined
+          }}
+          className="mb-4"
+        />
+
         {/* Order Header */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -307,14 +322,11 @@ export const OrderTrackingPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-lg font-semibold text-gray-900">
-                  Porosi #{order.numriPorosise}
+                  Order #{order.numriPorosise}
                 </h1>
                 <div className="flex items-center text-sm text-gray-600 mt-1">
                   <MapPin className="w-4 h-4 mr-1" />
                   {order.emriTavolines}
-                </div>
-                <div className="text-xs text-blue-700 mt-1 font-medium">
-                  Urdhëruar përmes Urdhëro
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -349,7 +361,7 @@ export const OrderTrackingPage: React.FC = () => {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Koha e vlerësuar:</span>
+                  <span className="text-gray-600">Estimated time:</span>
                   <span className="font-medium text-gray-900 flex items-center">
                     <Clock className="w-4 h-4 mr-1" />
                     {estimatedTime} min
@@ -367,7 +379,7 @@ export const OrderTrackingPage: React.FC = () => {
           transition={{ delay: 0.2 }}
         >
           <Card className="mb-6 p-4">
-            <h2 className="font-medium text-gray-900 mb-4">Progresi i Porosisë</h2>
+            <h2 className="font-medium text-gray-900 mb-4">Order Progress</h2>
             
             <div className="space-y-4">
               {orderSteps.map((step, index) => {
@@ -436,7 +448,7 @@ export const OrderTrackingPage: React.FC = () => {
         >
           <Card className="mb-6">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-medium text-gray-900">Artikujt e Porositur</h2>
+              <h2 className="font-medium text-gray-900">Ordered Items</h2>
             </div>
             
             <div className="divide-y divide-gray-100">
@@ -485,7 +497,7 @@ export const OrderTrackingPage: React.FC = () => {
               icon={<Phone className="w-4 h-4" />}
               iconPosition="left"
             >
-              Thirr Kamarierin
+              Call Staff
             </Button>
             <Button
               variant="outline"
@@ -493,7 +505,7 @@ export const OrderTrackingPage: React.FC = () => {
               icon={<Utensils className="w-4 h-4" />}
               iconPosition="left"
             >
-              Urdhëro Sërish
+              Order Again
             </Button>
           </div>
         </motion.div>
@@ -514,10 +526,10 @@ export const OrderTrackingPage: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-medium text-green-900">
-                      Porosia është gati! 🍽️
+                      Your order is ready! 🍽️
                     </div>
                     <div className="text-sm text-green-700">
-                      Kamarierin do t'jua sjellë në tavolinë
+                      Staff will bring it to your table
                     </div>
                   </div>
                 </div>
@@ -538,7 +550,7 @@ export const OrderTrackingPage: React.FC = () => {
               <Card className="p-4 bg-blue-50 border-blue-200">
                 <div className="text-center">
                   <h3 className="font-medium text-blue-900 mb-3">
-                    Si ishte eksperienca juaj me Urdhëro?
+                    How was your experience?
                   </h3>
                   <div className="flex justify-center space-x-2 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -561,7 +573,7 @@ export const OrderTrackingPage: React.FC = () => {
                       animate={{ opacity: 1 }}
                       className="text-sm text-blue-700"
                     >
-                      Faleminderit për feedback-un tuaj!
+                      Thank you for your feedback!
                     </motion.p>
                   )}
                 </div>

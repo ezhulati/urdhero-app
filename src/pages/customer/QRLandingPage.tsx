@@ -10,12 +10,15 @@ import { useWaiterCall } from '../../hooks/useWaiterCall';
 import { useLanguage } from '../../hooks/useTranslation';
 import { getTranslation } from '../../translations';
 import { LanguageSelector } from '../../components/ui/LanguageSelector';
+import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
+import { useCustomerAuth } from '../../hooks/useCustomerAuth';
 import { Restaurant, Table } from '../../types';
 import toast from 'react-hot-toast';
 
 export const QRLandingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useCustomerAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -26,6 +29,7 @@ export const QRLandingPage: React.FC = () => {
 
   const restaurantSlug = searchParams.get('r');
   const tableCode = searchParams.get('t');
+  const isReturning = searchParams.get('returning') === 'true';
   const isWalkIn = tableCode === 'walk-in';
 
   const t = (key: string, params?: Record<string, any>) => getTranslation(language, key, params);
@@ -74,11 +78,11 @@ export const QRLandingPage: React.FC = () => {
         email: 'info@beachbar.al',
         telefoni: '+355 69 123 4567',
         adresa: 'Rruga Taulantia, Durrës 2001',
-        pershkrimi: 'Restoranti më i mirë pranë detit me pamje të mrekullueshme dhe ushqim të freskët. Partner Premium i Urdhëro.',
+        pershkrimi: 'The best beachside venue with amazing views and fresh food. Premium Partner.',
         orariPunes: {
           hapeNe: '08:00',
           mbyllNe: '23:00',
-          ditetJaves: ['E Hënë', 'E Martë', 'E Mërkurë', 'E Enjte', 'E Premte', 'E Shtunë', 'E Diel']
+          ditetJaves: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         },
         eshteAktiv: true,
         krijuarNe: new Date(),
@@ -90,14 +94,14 @@ export const QRLandingPage: React.FC = () => {
         kodi: tableCode!,
         emriPerShfaqje: isWalkIn ? t('qrLanding.walkInCustomer') : `${t('common.table')} ${tableCode}`,
         pershkrimi: isWalkIn 
-          ? 'Urdhëro pa rezervim tavoline - pagesa direkt në kasa ose në tavolinë'
-          : 'Tavolinë premium me pamje deti dhe ambient relaksues',
+          ? 'Order without table reservation - pay directly at counter or at table'
+          : 'Premium table with sea view and relaxing atmosphere',
         pozicioni: isWalkIn 
           ? undefined
           : {
               x: 0,
               y: 0,
-              zona: 'Terrasa VIP me Pamje Deti'
+              zona: 'VIP Terrace with Sea View'
             },
         eshteAktive: true,
         krijuarNe: new Date()
@@ -122,12 +126,12 @@ export const QRLandingPage: React.FC = () => {
       
       // Show success message only once and only for specific scenarios
       if (isWalkIn) {
-        toast.success('Mirë se erdhe në Urdhëro! Urdhëro pa rezervim tavoline.', { 
+        toast.success('Welcome! Order without table reservation.', { 
           duration: 4000,
           id: 'qr-walkin-success'
         });
       } else {
-        toast.success(`Mirë se erdhe në ${mockRestaurant.emri} përmes Urdhëro!`, { 
+        toast.success(`Welcome to ${mockRestaurant.emri}!`, { 
           duration: 4000,
           id: 'qr-table-success'
         });
@@ -158,13 +162,13 @@ export const QRLandingPage: React.FC = () => {
       const callInfo = getCallInfo(table.kodi);
       if (callInfo) {
         const timeAgo = Math.floor((Date.now() - callInfo.calledAt.getTime()) / 60000);
-        toast.error(`${t('waiterCall.alreadyCalled')} (${timeAgo} ${t('common.minutes')} më parë)`);
+        toast.error(`${t('waiterCall.alreadyCalled')} (${timeAgo} ${t('common.minutes')} ago)`);
       }
     }
   };
 
   const handleAddToHomeScreen = () => {
-    toast('Shto Urdhëro në ekranin kryesor për qasje instant!', { duration: 3000 });
+    toast('Add to home screen for instant access!', { duration: 3000 });
   };
 
   if (loading) {
@@ -177,19 +181,19 @@ export const QRLandingPage: React.FC = () => {
           <div className="text-center max-w-sm mx-auto px-4">
             <LoadingSpinner size="lg" className="mb-6" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Validimi në Urdhëro
+              Validating
             </h3>
             <p className="text-gray-600 text-sm mb-4">
-              Po validojmë informacionin e restorantit dhe tavolinës
+              Verifying venue and table information
             </p>
             <div className="flex items-center justify-center space-x-3 text-sm">
               <div className="flex items-center text-green-600">
                 <Wifi className="w-4 h-4 mr-1" />
-                <span>{isOnline ? 'I lidhur' : 'Jo i lidhur'}</span>
+                <span>{isOnline ? 'Connected' : 'Not connected'}</span>
               </div>
               <div className="flex items-center text-blue-600">
                 <Shield className="w-4 h-4 mr-1" />
-                <span>SSL i Sigurt</span>
+                <span>SSL Secure</span>
               </div>
             </div>
           </div>
@@ -239,6 +243,14 @@ export const QRLandingPage: React.FC = () => {
       </Header>
       
       <div className="max-w-md mx-auto px-4 pt-6 pb-8">
+        {/* Customer Status Banner */}
+        <CustomerStatusBanner 
+          user={user}
+          isAuthenticated={isAuthenticated}
+          venue={restaurant ? { name: restaurant.emri, type: 'restaurant' } : undefined}
+          className="mb-4"
+        />
+
         {/* Success Message */}
         <div className="flex items-center justify-center mb-6">
           <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border shadow-sm ${
@@ -254,7 +266,7 @@ export const QRLandingPage: React.FC = () => {
             <span className={`font-semibold text-sm ${
               isWalkIn ? 'text-orange-700' : 'text-green-700'
             }`}>
-              Lidhur me Urdhëro
+              Connected
             </span>
           </div>
         </div>
@@ -284,11 +296,8 @@ export const QRLandingPage: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <Shield className="w-4 h-4 mr-1" />
-                  Partner Premium
+                  Premium Partner
                 </div>
-              </div>
-              <div className="text-xs text-blue-200 font-medium">
-                Powered by Urdhëro Platform
               </div>
             </div>
           </div>
@@ -361,7 +370,7 @@ export const QRLandingPage: React.FC = () => {
                 <div className="flex items-center space-x-3 text-gray-600 py-2">
                   <Clock className="w-5 h-5 flex-shrink-0 text-gray-500" />
                   <div className="text-sm">
-                    <div className="font-medium">Hapur tani: {restaurant.orariPunes.hapeNe} - {restaurant.orariPunes.mbyllNe}</div>
+                    <div className="font-medium">Open now: {restaurant.orariPunes.hapeNe} - {restaurant.orariPunes.mbyllNe}</div>
                     <div className="text-xs text-gray-500">{t('qrLanding.everyDay')}</div>
                   </div>
                 </div>
@@ -380,7 +389,7 @@ export const QRLandingPage: React.FC = () => {
             icon={<Phone className="w-4 h-4" />}
             iconPosition="left"
           >
-            {waiterCalled ? 'Thirrur' : 'Thirr Kamarier'}
+            {waiterCalled ? 'Called' : 'Call Staff'}
           </Button>
           <Button 
             variant="outline"
@@ -389,7 +398,7 @@ export const QRLandingPage: React.FC = () => {
             icon={<Plus className="w-4 h-4" />}
             iconPosition="left"
           >
-            Shto Urdhëro
+            Add to Home
           </Button>
         </div>
 
@@ -405,7 +414,7 @@ export const QRLandingPage: React.FC = () => {
                   {t('waiterCall.waitingForWaiter')}
                 </div>
                 <div className="text-xs text-green-700">
-                  Thirrur {Math.floor((Date.now() - callInfo.calledAt.getTime()) / 60000)} {t('common.minutes')} më parë
+                  Called {Math.floor((Date.now() - callInfo.calledAt.getTime()) / 60000)} {t('common.minutes')} ago
                 </div>
               </div>
             </div>
@@ -415,7 +424,7 @@ export const QRLandingPage: React.FC = () => {
         {/* Main Action Button */}
         <Button 
           size="lg" 
-          className="w-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 mb-6"
+          className="w-full shadow-lg hover:shadow-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 mb-6"
           onClick={handleViewMenu}
           data-testid="view-menu-button"
           icon={<Zap className="w-5 h-5" />}
@@ -433,10 +442,10 @@ export const QRLandingPage: React.FC = () => {
                 Powered by Urdhëro Platform
               </p>
               <ul className="text-xs text-blue-700 space-y-1">
-                <li>• Urdhërime instant dhe të sigurta</li>
-                <li>• Ndjekje në kohë reale të porosisë</li>
-                <li>• 100% e sigurt dhe e mbrojtur</li>
-                <li>• Mbështetje 24/7 në gjuhën shqipe</li>
+                <li>• Instant and secure ordering</li>
+                <li>• Real-time order tracking</li>
+                <li>• 100% secure and protected</li>
+                <li>• 24/7 support in Albanian</li>
               </ul>
             </div>
           </div>

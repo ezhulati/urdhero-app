@@ -9,6 +9,7 @@ import { Badge } from '../../components/ui/Badge';
 import { LoyaltyWidget } from '../../components/loyalty/LoyaltyWidget';
 import { CustomerAuth } from '../../components/auth/CustomerAuth';
 import { AccountCreationPrompt } from '../../components/auth/AccountCreationPrompt';
+import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCart } from '../../hooks/useCart';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
 import { useLoyalty } from '../../hooks/useLoyalty';
@@ -76,7 +77,7 @@ export const CartPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading restaurant settings:', error);
-      toast.error('Gabim në ngarkimin e cilësimeve');
+      toast.error('Error loading settings');
     } finally {
       setLoading(false);
     }
@@ -96,14 +97,14 @@ export const CartPage: React.FC = () => {
 
   const handleCheckout = () => {
     if (items.length === 0) {
-      toast.error('Shto artikuj në porosi para se ta urdhërosh');
+      toast.error('Add items to your order first');
       return;
     }
 
     if (paymentMethod === PaymentMethod.KARTE && restaurant?.paymentSettings?.minimumOrderForCard) {
       const minOrder = restaurant.paymentSettings.minimumOrderForCard;
       if (getTotalPrice() < minOrder) {
-        toast.error(`Porosi minimale për kartë: ${formatPrice(minOrder)} €`);
+        toast.error(`Minimum order for card: ${formatPrice(minOrder)} €`);
         return;
       }
     }
@@ -117,14 +118,14 @@ export const CartPage: React.FC = () => {
 
   const handleAuthSuccess = (userData: any) => {
     setShowAuthModal(false);
-    toast.success('Mirë se erdhe në Urdhëro! Tani mund të vazhdosh me porosinë.');
+    toast.success('Welcome! You can now proceed with your order.');
     handleSubmitOrder();
   };
 
   const handleGuestContinue = () => {
     setShowAuthModal(false);
     setProceedAsGuest(true);
-    toast.success('Duke vazhduar si vizitor në Urdhëro');
+    toast.success('Continuing as guest');
     handleSubmitOrder();
   };
 
@@ -157,7 +158,7 @@ export const CartPage: React.FC = () => {
         await processOrderForLoyalty(finalTotal, orderNumber);
         
         // Show loyalty success message
-        toast.success(`Porosia u urdhërua + ${pointsToEarn} pikë të reja!`, {
+        toast.success(`Order placed + ${pointsToEarn} new points!`, {
           duration: 4000
         });
       }
@@ -169,7 +170,7 @@ export const CartPage: React.FC = () => {
       clearCart();
       
       if (!loyaltyUser) {
-        toast.success('Porosia u urdhërua me sukses përmes Urdhëro!', {
+        toast.success('Order placed successfully!', {
           duration: 4000
         });
       }
@@ -182,7 +183,7 @@ export const CartPage: React.FC = () => {
       
       navigate(`/order/${orderNumber}`);
     } catch (error) {
-      toast.error('Ndodhi një gabim. Provoni përsëri.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -210,11 +211,11 @@ export const CartPage: React.FC = () => {
   const getPaymentMethodInfo = (method: PaymentMethod) => {
     switch (method) {
       case PaymentMethod.KESH:
-        return { icon: Banknote, label: 'Kesh', description: 'Pagesa me para fizike' };
+        return { icon: Banknote, label: 'Cash', description: 'Pay with physical cash' };
       case PaymentMethod.KARTE:
-        return { icon: CreditCard, label: 'Kartë', description: 'Kartë debiti/kredit' };
+        return { icon: CreditCard, label: 'Card', description: 'Debit/credit card' };
       case PaymentMethod.DIGITAL:
-        return { icon: Smartphone, label: 'Digjitale', description: 'Apple Pay, Google Pay' };
+        return { icon: Smartphone, label: 'Digital', description: 'Apple Pay, Google Pay' };
     }
   };
 
@@ -252,11 +253,11 @@ export const CartPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Porosia Urdhëro" showBack showCart={false} />
+        <Header title="Your Order" showBack showCart={false} />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Duke ngarkuar Urdhëro...</p>
+            <p className="text-gray-600">Loading...</p>
           </div>
         </div>
       </div>
@@ -266,7 +267,7 @@ export const CartPage: React.FC = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Porosia Urdhëro" showBack showCart={false} />
+        <Header title="Your Order" showBack showCart={false} />
         
         <div className="max-w-md mx-auto px-4 pt-8">
           <motion.div
@@ -290,17 +291,17 @@ export const CartPage: React.FC = () => {
                 <ShoppingBag className="w-12 h-12 text-gray-400" />
               </motion.div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Porosia është bosh
+                Your cart is empty
               </h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Kur të shtosh artikuj nga menuja, ato do të shfaqen këtu për të vazhduar me urdhërimin përmes Urdhëro.
+                When you add items from the menu, they'll appear here to continue with your order.
               </p>
               <Button 
                 onClick={() => navigate(`/menu?r=${restaurantSlug}&t=A15`)}
                 className="w-full"
                 size="lg"
               >
-                Eksploro Menunë
+                Explore Menu
               </Button>
             </Card>
           </motion.div>
@@ -315,7 +316,7 @@ export const CartPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Porosia Urdhëro" showBack showCart={false} />
+      <Header title="Your Order" showBack showCart={false} />
       
       <motion.div 
         className="max-w-md mx-auto px-4 pt-6 pb-32"
@@ -323,50 +324,13 @@ export const CartPage: React.FC = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* User Status */}
-        {!isAuthenticated && !proceedAsGuest && (
-          <motion.div variants={itemVariants}>
-            <Card className="mb-4 p-4 bg-blue-50 border-blue-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <UserPlus className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <div className="font-medium text-blue-900 text-sm">Krijo llogari Urdhëro për përfitime</div>
-                    <div className="text-xs text-blue-700">Histori porosish, artikuj të preferuar dhe më shumë</div>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAuthModal(true)}
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100 flex items-center"
-                  icon={<User className="w-4 h-4" />}
-                  iconPosition="left"
-                >
-                  Krijo
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-
-        {isAuthenticated && user && (
-          <motion.div variants={itemVariants}>
-            <Card className="mb-4 p-4 bg-green-50 border-green-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <div className="font-medium text-green-900 text-sm">Mirë se erdhe në Urdhëro, {user.name}!</div>
-                  <div className="text-xs text-green-700">
-                    {user.totalOrders > 0 ? `${user.totalOrders} porosi të mëparshme` : 'Porosia e parë në Urdhëro'}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        )}
+        {/* Customer Status Banner */}
+        <CustomerStatusBanner 
+          user={user}
+          isAuthenticated={isAuthenticated}
+          venue={restaurant ? { name: restaurant.emri, type: 'restaurant' } : undefined}
+          className="mb-4"
+        />
 
         {/* Loyalty Widget */}
         {isAuthenticated && (
@@ -385,10 +349,10 @@ export const CartPage: React.FC = () => {
                 </div>
                 <div>
                   <div className="font-medium text-yellow-900 text-sm">
-                    +{pointsToEarn} pikë nga kjo porosi!
+                    +{pointsToEarn} points from this order!
                   </div>
                   <div className="text-xs text-yellow-700">
-                    Loyalty multiplier aktiv ({loyaltyUser?.tier ? 1.25 : 1}x)
+                    Active loyalty multiplier ({loyaltyUser?.tier ? 1.25 : 1}x)
                   </div>
                 </div>
               </div>
@@ -402,11 +366,11 @@ export const CartPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-semibold text-gray-900 text-lg">
-                  {getTotalItems()} artikuj
+                  {getTotalItems()} items
                 </div>
                 <div className="text-sm text-gray-600 flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  Koha e vlerësuar: ~{estimatedTime} min
+                  Estimated time: ~{estimatedTime} min
                 </div>
               </div>
               <div className="text-right">
@@ -533,10 +497,10 @@ export const CartPage: React.FC = () => {
           <Card className="mb-6 p-4">
             <h3 className="font-medium text-gray-900 mb-3 flex items-center">
               <MessageCircle className="w-5 h-5 mr-2" />
-              Instruksione Speciale
+              Special Instructions
             </h3>
             <textarea
-              placeholder="Shto komente për porosinë (opsionale)..."
+              placeholder="Add comments for your order (optional)..."
               rows={3}
               value={orderNotes}
               onChange={(e) => setOrderNotes(e.target.value)}
@@ -548,7 +512,7 @@ export const CartPage: React.FC = () => {
         {/* Payment Method */}
         <motion.div variants={itemVariants}>
           <Card className="mb-6 p-4">
-            <h3 className="font-medium text-gray-900 mb-3">Metoda e Pagesës</h3>
+            <h3 className="font-medium text-gray-900 mb-3">Payment Method</h3>
             
             {availablePaymentMethods.length === 1 ? (
               <div className="p-3 rounded-xl border-2 border-blue-200 bg-blue-50">
@@ -561,7 +525,7 @@ export const CartPage: React.FC = () => {
                       {getPaymentMethodInfo(availablePaymentMethods[0]).label}
                     </div>
                     <div className="text-sm text-blue-700">
-                      E vetmja metodë e disponueshme
+                      Only available method
                     </div>
                   </div>
                 </div>
@@ -611,7 +575,7 @@ export const CartPage: React.FC = () => {
                 <div className="flex items-start space-x-2">
                   <AlertCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
                   <div className="text-sm">
-                    <div className="font-medium text-orange-900">Taksa procesimi kartë</div>
+                    <div className="font-medium text-orange-900">Card processing fee</div>
                     <div className="text-orange-700">
                       +{formatPrice(cardFee)} € ({restaurant?.paymentSettings?.cardProcessingFee}%)
                     </div>
@@ -643,13 +607,13 @@ export const CartPage: React.FC = () => {
               icon={!submitting ? <ArrowRight className="w-5 h-5" /> : undefined}
               iconPosition="right"
             >
-              {submitting ? 'Duke urdhëruar...' : 'Urdhëro Tani'}
+              {submitting ? 'Processing...' : 'Place Order'}
             </Button>
           </motion.div>
           
           <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
             <span>Total: {formatPrice(finalTotal)} €</span>
-            <span>Koha: ~{estimatedTime} min</span>
+            <span>Time: ~{estimatedTime} min</span>
             <div className="flex items-center">
               {React.createElement(getPaymentMethodInfo(paymentMethod).icon, {
                 className: "w-4 h-4 mr-1"
@@ -662,7 +626,7 @@ export const CartPage: React.FC = () => {
           {loyaltyUser && pointsToEarn > 0 && (
             <div className="flex items-center justify-center mt-2 text-xs text-yellow-600">
               <Star className="w-3 h-3 mr-1" />
-              <span>+{pointsToEarn} pikë loyalty pas porosisë</span>
+              <span>+{pointsToEarn} loyalty points after order</span>
             </div>
           )}
         </div>

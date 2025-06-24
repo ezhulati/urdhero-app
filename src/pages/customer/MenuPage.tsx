@@ -9,12 +9,15 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { MenuItemSkeleton } from '../../components/ui/SkeletonLoader';
+import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { MenuItem, Restaurant, Table, MenuCategory } from '../../types';
+import { useCustomerAuth } from '../../hooks/useCustomerAuth';
 import toast from 'react-hot-toast';
 
 export const MenuPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useCustomerAuth();
   const [loading, setLoading] = useState(true);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [table, setTable] = useState<Table | null>(null);
@@ -29,7 +32,6 @@ export const MenuPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState<'all' | 'low' | 'medium' | 'high'>('all');
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'popular'>('default');
   
-  // Add ref to prevent duplicate welcome toasts
   const welcomeToastShownRef = useRef(false);
 
   const restaurantSlug = searchParams.get('r');
@@ -72,14 +74,14 @@ export const MenuPage: React.FC = () => {
       setTable({ 
         id: '2', 
         kodi: tableCode!, 
-        emriPerShfaqje: isWalkIn ? `Klient Walk-in` : `Tavolina ${tableCode}`, 
+        emriPerShfaqje: isWalkIn ? `Walk-in Customer` : `Table ${tableCode}`, 
         eshteAktive: true, 
         krijuarNe: new Date() 
       });
       setMenuItems([]);
       setCategories([]);
     } catch (error) {
-      toast.error('Gabim në ngarkimin e menusë');
+      toast.error('Error loading menu');
     } finally {
       setLoading(false);
     }
@@ -100,16 +102,16 @@ export const MenuPage: React.FC = () => {
       const mockTable: Table = {
         id: '1',
         kodi: tableCode!,
-        emriPerShfaqje: isWalkIn ? 'Klient Walk-in' : `Tavolina ${tableCode}`,
+        emriPerShfaqje: isWalkIn ? 'Walk-in Customer' : `Table ${tableCode}`,
         pershkrimi: isWalkIn 
-          ? 'Porosi pa rezervim tavoline - mund të paguash direkt në kasa'
-          : 'Tavolinë pranë dritares me pamje të detit dhe erë të freskët deti',
+          ? 'Order without table assignment - pay at counter or wait for service'
+          : 'Premium table with sea view and relaxing atmosphere',
         pozicioni: isWalkIn 
           ? undefined
           : {
               x: 0,
               y: 0,
-              zona: 'Terrasa me Pamje Deti'
+              zona: 'VIP Terrace with Sea View'
             },
         eshteAktive: true,
         krijuarNe: new Date()
@@ -119,10 +121,10 @@ export const MenuPage: React.FC = () => {
         {
           id: '1',
           emri: 'Aperol Spritz',
-          pershkrimi: 'Aperitiv klasik italian me Aperol, Prosecco dhe sodë, i dekoruar me portokall të freskët',
+          pershkrimi: 'Classic Italian aperitif with Aperol, Prosecco and soda, garnished with fresh orange',
           cmimi: 850,
           kategoria: MenuCategory.PIJE,
-          nenkategoria: 'Alkolike',
+          nenkategoria: 'Alcoholic',
           imazhi: 'https://images.pexels.com/photos/5947043/pexels-photo-5947043.jpeg?auto=compress&cs=tinysrgb&w=400',
           eshteIGatshem: true,
           eshteVegetarian: true,
@@ -134,7 +136,7 @@ export const MenuPage: React.FC = () => {
         {
           id: '2',
           emri: 'Pizza Margherita',
-          pershkrimi: 'Pizza klasike me sos domate të freskët, mozzarella di bufala dhe borzilok të freskët nga kopshti ynë',
+          pershkrimi: 'Classic pizza with fresh tomato sauce, buffalo mozzarella and fresh basil from our garden',
           cmimi: 1200,
           kategoria: MenuCategory.PIZZA,
           imazhi: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -147,8 +149,8 @@ export const MenuPage: React.FC = () => {
         },
         {
           id: '3',
-          emri: 'Sallata Greke',
-          pershkrimi: 'Sallata tradicionale greke me domate të kuqe, kastravec, ullinj Kalamata dhe djathë feta origjinal',
+          emri: 'Greek Salad',
+          pershkrimi: 'Traditional Greek salad with fresh tomatoes, cucumber, Kalamata olives and original feta cheese',
           cmimi: 900,
           kategoria: MenuCategory.SALLATAT,
           imazhi: 'https://images.pexels.com/photos/1213710/pexels-photo-1213710.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -162,11 +164,11 @@ export const MenuPage: React.FC = () => {
         },
         {
           id: '4',
-          emri: 'Kafe Espresso',
-          pershkrimi: 'Kafe italiane e përfektë, e përgatitur nga kokrra të zgjedhura dhe të pjekura në shtëpi',
+          emri: 'Espresso Coffee',
+          pershkrimi: 'Perfect Italian coffee, prepared from selected beans roasted in-house',
           cmimi: 200,
           kategoria: MenuCategory.PIJE,
-          nenkategoria: 'Jo-alkolike',
+          nenkategoria: 'Non-alcoholic',
           imazhi: 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=400',
           eshteIGatshem: true,
           eshteVegan: true,
@@ -177,8 +179,8 @@ export const MenuPage: React.FC = () => {
         },
         {
           id: '5',
-          emri: 'Peshk i Grilluar',
-          pershkrimi: 'Peshk i freskët i ditës i grilluar në perfeksion me perime sezonale dhe salcë limoni',
+          emri: 'Grilled Fish',
+          pershkrimi: 'Catch of the day grilled to perfection with seasonal vegetables and lemon sauce',
           cmimi: 1800,
           kategoria: MenuCategory.PESHK,
           imazhi: 'https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -191,7 +193,7 @@ export const MenuPage: React.FC = () => {
         {
           id: '6',
           emri: 'Tiramisu',
-          pershkrimi: 'Ëmbëlsira klasike italiane me kafe espresso, mascarpone dhe kokrra kakao',
+          pershkrimi: 'Classic Italian dessert with espresso coffee, mascarpone and cocoa beans',
           cmimi: 700,
           kategoria: MenuCategory.EMBELSIRA,
           imazhi: 'https://images.pexels.com/photos/6046493/pexels-photo-6046493.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -204,8 +206,8 @@ export const MenuPage: React.FC = () => {
         },
         {
           id: '7',
-          emri: 'Burger Vegan',
-          pershkrimi: 'Burger 100% bimor me patate të ëmbla, quinoa dhe perime të freskëta',
+          emri: 'Vegan Burger',
+          pershkrimi: '100% plant-based burger with sweet potatoes, quinoa and fresh vegetables',
           cmimi: 1100,
           kategoria: MenuCategory.USHQIM,
           imazhi: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400',
@@ -233,15 +235,15 @@ export const MenuPage: React.FC = () => {
       // Show welcome message only once and only for specific scenarios
       if (!welcomeToastShownRef.current) {
         if (isReturning) {
-          toast.success('Mirë se erdhe përsëri! Ja menuja e plotë.', { id: 'welcome-returning' });
+          toast.success('Welcome back! Here\'s the full menu.', { id: 'welcome-returning' });
         } else if (isWalkIn) {
-          toast.success('Mirë se erdhe! Mund të porositësh pa rezervim tavoline.', { id: 'welcome-walkin' });
+          toast.success('Welcome! You can order without a table reservation.', { id: 'welcome-walkin' });
         }
         welcomeToastShownRef.current = true;
       }
     } catch (error) {
       console.error('Error loading menu:', error);
-      toast.error('Gabim në ngarkimin e menusë');
+      toast.error('Error loading menu');
     } finally {
       setLoading(false);
     }
@@ -328,7 +330,7 @@ export const MenuPage: React.FC = () => {
     setAvailabilityFilter('all');
     setPriceRange('all');
     setSortBy('default');
-    toast.success('Filtrat u pastruan');
+    toast.success('Filters cleared');
   };
 
   const hasActiveFilters = selectedCategory || searchQuery || dietaryFilter !== 'all' || 
@@ -384,67 +386,20 @@ export const MenuPage: React.FC = () => {
       />
       
       <div className="max-w-md mx-auto px-4 py-6">
-        {/* Table Info */}
-        {table && (
-          <Card className={`mb-6 p-4 ${
-            isWalkIn 
-              ? 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200'
-              : 'bg-gradient-to-r from-blue-50 to-teal-50 border-blue-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  isWalkIn 
-                    ? 'bg-orange-600' 
-                    : 'bg-blue-600'
-                }`}>
-                  {isWalkIn ? (
-                    <UserCheck className="w-5 h-5 text-white" />
-                  ) : (
-                    <span className="text-white font-semibold text-sm">{table.kodi}</span>
-                  )}
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900">{table.emriPerShfaqje}</div>
-                  <div className="text-sm text-gray-600 flex items-center">
-                    {isWalkIn ? (
-                      <>
-                        <UserCheck className="w-4 h-4 mr-1" />
-                        {table.pershkrimi || 'Porosi pa rezervim tavoline'}
-                      </>
-                    ) : (
-                      <>
-                        <Wifi className="w-4 h-4 mr-1" />
-                        {isReturning ? 'Mirë se erdhe përsëri!' : 'Jeni të lidhur me këtë tavolinë'}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                {isReturning && (
-                  <Badge variant="success" size="sm">
-                    <Heart className="w-3 h-3 mr-1" />
-                    Vizitor i rregullt
-                  </Badge>
-                )}
-                {isWalkIn && (
-                  <Badge variant="warning" size="sm">
-                    <UserCheck className="w-3 h-3 mr-1" />
-                    Walk-in
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </Card>
-        )}
+        {/* Customer Status Banner */}
+        <CustomerStatusBanner 
+          user={user}
+          isAuthenticated={isAuthenticated}
+          venue={restaurant ? { name: restaurant.emri, type: 'restaurant' } : undefined}
+          className="mb-4"
+        />
 
         {/* Search Bar */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Kërko në menu..."
+            placeholder="Search menu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
@@ -464,10 +419,10 @@ export const MenuPage: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <Filter className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-900">Filtrat</span>
+              <span className="font-medium text-gray-900">Filters</span>
               {hasActiveFilters && (
                 <Badge variant="primary" size="sm">
-                  Aktiv
+                  Active
                 </Badge>
               )}
             </div>
@@ -479,7 +434,7 @@ export const MenuPage: React.FC = () => {
                 className="text-gray-600"
               >
                 <SlidersHorizontal className="w-4 h-4 mr-1" />
-                {showFilters ? 'Fshih' : 'Trego'}
+                {showFilters ? 'Hide' : 'Show'}
               </Button>
               {hasActiveFilters && (
                 <Button
@@ -488,7 +443,7 @@ export const MenuPage: React.FC = () => {
                   onClick={clearAllFilters}
                   className="text-blue-600"
                 >
-                  Pastro
+                  Clear
                 </Button>
               )}
             </div>
@@ -504,7 +459,7 @@ export const MenuPage: React.FC = () => {
                   : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
-              Të gjitha
+              All
             </button>
             {categories.map(category => (
               <button
@@ -529,12 +484,12 @@ export const MenuPage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Leaf className="w-4 h-4 inline mr-1" />
-                    Preferencat ushqimore
+                    Dietary preferences
                   </label>
                   <div className="flex space-x-2">
                     {[
-                      { value: 'all', label: 'Të gjitha' },
-                      { value: 'vegetarian', label: 'Vegetariane' },
+                      { value: 'all', label: 'All' },
+                      { value: 'vegetarian', label: 'Vegetarian' },
                       { value: 'vegan', label: 'Vegan' }
                     ].map(option => (
                       <button
@@ -556,13 +511,13 @@ export const MenuPage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Clock className="w-4 h-4 inline mr-1" />
-                    Disponueshmëria
+                    Availability
                   </label>
                   <div className="flex space-x-2">
                     {[
-                      { value: 'all', label: 'Të gjitha' },
-                      { value: 'available', label: 'Të gatshme' },
-                      { value: 'unavailable', label: 'Jo të gatshme' }
+                      { value: 'all', label: 'All' },
+                      { value: 'available', label: 'Available' },
+                      { value: 'unavailable', label: 'Unavailable' }
                     ].map(option => (
                       <button
                         key={option.value}
@@ -582,11 +537,11 @@ export const MenuPage: React.FC = () => {
                 {/* Price Range */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Çmimi
+                    Price
                   </label>
                   <div className="flex space-x-2">
                     {[
-                      { value: 'all', label: 'Të gjitha' },
+                      { value: 'all', label: 'All' },
                       { value: 'low', label: '< 5€' },
                       { value: 'medium', label: '5-12€' },
                       { value: 'high', label: '> 12€' }
@@ -609,17 +564,17 @@ export const MenuPage: React.FC = () => {
                 {/* Sort Options */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Renditja
+                    Sort by
                   </label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="default">E rekomanduar</option>
-                    <option value="price-low">Çmimi: Nga më i ulëti</option>
-                    <option value="price-high">Çmimi: Nga më i larti</option>
-                    <option value="popular">Më të popullarit</option>
+                    <option value="default">Recommended</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="popular">Most Popular</option>
                   </select>
                 </div>
               </div>
@@ -633,20 +588,20 @@ export const MenuPage: React.FC = () => {
             <Card className="p-8">
               <EmptyState
                 icon={menuItems.length === 0 ? "🍽️" : "🔍"}
-                title={menuItems.length === 0 ? "Menuja është bosh" : "Asnjë rezultat"}
+                title={menuItems.length === 0 ? "Menu is empty" : "No results"}
                 description={
                   menuItems.length === 0 
-                    ? "Ky restorant nuk ka shtuar ende artikuj në menu. Kontaktoni personalin."
+                    ? "This venue hasn't added menu items yet. Contact staff for assistance."
                     : hasActiveFilters
-                      ? "Nuk u gjetën artikuj për filtrat e zgjedhur. Provoni të ndryshoni kriteret e kërkimit."
-                      : "Nuk ka artikuj të disponueshëm."
+                      ? "No items found for the selected filters. Try changing your search criteria."
+                      : "No items available."
                 }
                 actionLabel={
                   menuItems.length === 0 
-                    ? "Kontakto Personalin" 
+                    ? "Contact Staff" 
                     : hasActiveFilters 
-                      ? "Pastro filtrat" 
-                      : "Rifresko Menunë"
+                      ? "Clear filters" 
+                      : "Refresh Menu"
                 }
                 onAction={
                   menuItems.length === 0 
@@ -663,12 +618,12 @@ export const MenuPage: React.FC = () => {
               {hasActiveFilters && (
                 <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                   <span>
-                    {filteredItems.length} rezultat{filteredItems.length !== 1 ? 'e' : ''} nga {menuItems.length}
+                    {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''} from {menuItems.length}
                   </span>
                   {filteredItems.filter(item => !item.eshteIGatshem).length > 0 && (
                     <div className="flex items-center text-orange-600">
                       <AlertCircle className="w-4 h-4 mr-1" />
-                      Disa artikuj nuk janë të gatshëm
+                      Some items are unavailable
                     </div>
                   )}
                 </div>
@@ -688,13 +643,13 @@ export const MenuPage: React.FC = () => {
               <div className="flex items-center space-x-2 text-sm">
                 <Filter className="w-4 h-4 text-blue-600" />
                 <span className="text-gray-700">
-                  {filteredItems.length} rezultat{filteredItems.length !== 1 ? 'e' : ''}
+                  {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''}
                 </span>
                 <button
                   onClick={clearAllFilters}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  Pastro
+                  Clear
                 </button>
               </div>
             </Card>

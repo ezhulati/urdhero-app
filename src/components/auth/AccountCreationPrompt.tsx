@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Clock, Heart, Gift, X } from 'lucide-react';
+import { UserPlus, Clock, Heart, Gift, X, Sparkles, Star, CheckCircle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ export const AccountCreationPrompt: React.FC<AccountCreationPromptProps> = ({
 
   const handleDismiss = () => {
     setDismissed(true);
-    toast.success('Do të pyetemi përsëri herës tjetër!');
+    toast.success('We\'ll ask again next time!');
     onClose();
   };
 
@@ -52,7 +52,7 @@ export const AccountCreationPrompt: React.FC<AccountCreationPromptProps> = ({
           <Card className="relative overflow-hidden">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600"
+              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -65,39 +65,39 @@ export const AccountCreationPrompt: React.FC<AccountCreationPromptProps> = ({
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
               >
-                <span className="text-2xl">🎉</span>
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </motion.div>
 
               <h2 className="text-lg font-bold text-gray-900 mb-2">
-                Porosia u Dërgua me Sukses!
+                Order Successfully Placed!
               </h2>
               
               {orderNumber && (
                 <p className="text-sm text-gray-600 mb-4">
-                  Porosi #{orderNumber}
+                  Order #{orderNumber}
                   {orderTotal && ` • ${(orderTotal / 100).toFixed(2)} €`}
                 </p>
               )}
 
               <div className="bg-blue-50 rounded-lg p-4 mb-6">
                 <div className="flex items-center justify-center mb-3">
-                  <UserPlus className="w-8 h-8 text-blue-600" />
+                  <Sparkles className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="font-semibold text-blue-900 mb-2">
-                  Krijo Llogari për Përfitime Ekstra
+                  Create Account for Extra Benefits
                 </h3>
                 <div className="space-y-2 text-xs text-blue-700">
                   <div className="flex items-center justify-center space-x-2">
                     <Clock className="w-3 h-3" />
-                    <span>Histori porosish</span>
+                    <span>Order history</span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
                     <Heart className="w-3 h-3" />
-                    <span>Artikuj të preferuar</span>
+                    <span>Favorite items</span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
-                    <Gift className="w-3 h-3" />
-                    <span>Ofertat ekskluzive</span>
+                    <Star className="w-3 h-3" />
+                    <span>Earn loyalty points</span>
                   </div>
                 </div>
               </div>
@@ -105,9 +105,11 @@ export const AccountCreationPrompt: React.FC<AccountCreationPromptProps> = ({
               <div className="space-y-3">
                 <Button
                   onClick={handleCreateAccount}
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  icon={<UserPlus className="w-4 h-4 mr-1" />}
+                  iconPosition="left"
                 >
-                  Krijo Llogari Falas
+                  Create Free Account
                 </Button>
                 
                 <Button
@@ -116,12 +118,12 @@ export const AccountCreationPrompt: React.FC<AccountCreationPromptProps> = ({
                   className="w-full text-gray-600"
                   size="sm"
                 >
-                  Jo faleminderit
+                  Maybe later
                 </Button>
               </div>
 
               <p className="text-xs text-gray-500 mt-3">
-                Vetëm 30 sekonda për të përfituar avantazhet
+                Takes just 30 seconds to unlock all benefits
               </p>
             </div>
           </Card>
