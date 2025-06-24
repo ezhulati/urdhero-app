@@ -1,13 +1,54 @@
 import React from 'react';
 
-interface ProgressBarProps {
-  progress: number; // 0-100
-  color?: 'blue' | 'green' | 'orange' | 'red';
+/**
+ * Props for the ProgressBar component
+ * @interface ProgressBarProps
+ */
+export interface ProgressBarProps {
+  /**
+   * Progress value from 0 to 100
+   */
+  progress: number;
+  
+  /**
+   * Color of the progress bar
+   * @default 'blue'
+   */
+  color?: 'blue' | 'green' | 'orange' | 'red' | 'purple';
+  
+  /**
+   * Size of the progress bar
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg';
+  
+  /**
+   * Whether to show the percentage text
+   * @default false
+   */
   showPercentage?: boolean;
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
 }
 
+/**
+ * ProgressBar component for displaying progress or completion status.
+ * 
+ * @example
+ * // Basic usage
+ * <ProgressBar progress={75} />
+ * 
+ * @example
+ * // Success progress with percentage
+ * <ProgressBar progress={100} color="green" showPercentage />
+ * 
+ * @example
+ * // Custom sized progress bar
+ * <ProgressBar progress={33} color="orange" size="lg" />
+ */
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
   color = 'blue',
@@ -19,7 +60,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     blue: 'bg-blue-600',
     green: 'bg-green-600',
     orange: 'bg-orange-600',
-    red: 'bg-red-600'
+    red: 'bg-red-600',
+    purple: 'bg-purple-600'
   };
 
   const sizeClasses = {

@@ -1,15 +1,61 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface BadgeProps {
+/**
+ * Props for the Badge component
+ * @interface BadgeProps
+ */
+export interface BadgeProps {
+  /**
+   * Content to be rendered inside the badge
+   */
   children: React.ReactNode;
+  
+  /**
+   * Visual style variant of the badge
+   * @default 'primary'
+   */
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral' | 'gradient';
+  
+  /**
+   * Size variant of the badge
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg';
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
+  
+  /**
+   * Whether the badge should have animation when it first appears
+   * @default false
+   */
   animate?: boolean;
+  
+  /**
+   * Whether the badge should pulse to draw attention
+   * @default false
+   */
   pulse?: boolean;
 }
 
+/**
+ * Badge component for displaying short status descriptors.
+ * 
+ * @example
+ * // Basic usage
+ * <Badge>New</Badge>
+ * 
+ * @example
+ * // Danger badge with small size
+ * <Badge variant="danger" size="sm">Error</Badge>
+ * 
+ * @example
+ * // Animated badge that pulses
+ * <Badge variant="warning" animate pulse>Alert</Badge>
+ */
 export const Badge: React.FC<BadgeProps> = ({
   children,
   variant = 'primary',

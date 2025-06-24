@@ -1,13 +1,45 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface LoadingSpinnerProps {
+/**
+ * Props for the LoadingSpinner component
+ * @interface LoadingSpinnerProps
+ */
+export interface LoadingSpinnerProps {
+  /**
+   * Size of the spinner
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
+  
+  /**
+   * Color of the spinner
+   * @default 'primary'
+   */
   color?: 'primary' | 'secondary' | 'white';
+  
+  /**
+   * Optional text to display below the spinner
+   */
   text?: string;
 }
 
+/**
+ * LoadingSpinner component for indicating loading states.
+ * 
+ * @example
+ * // Basic usage
+ * <LoadingSpinner />
+ * 
+ * @example
+ * // Large white spinner with text
+ * <LoadingSpinner size="lg" color="white" text="Loading data..." />
+ */
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
   className = '',
@@ -79,6 +111,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   );
 };
 
+/**
+ * PageLoader component for displaying a full-page loading indicator
+ */
 export const PageLoader: React.FC<{ message?: string }> = ({ message }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">

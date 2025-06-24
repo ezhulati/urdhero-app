@@ -1,11 +1,39 @@
 import React from 'react';
 
-interface SkeletonLoaderProps {
+/**
+ * Props for the SkeletonLoader component
+ * @interface SkeletonLoaderProps
+ */
+export interface SkeletonLoaderProps {
+  /**
+   * Number of lines to display
+   * @default 3
+   */
   lines?: number;
+  
+  /**
+   * Height of each skeleton line
+   * @default 'md'
+   */
   height?: 'sm' | 'md' | 'lg';
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
 }
 
+/**
+ * SkeletonLoader component for displaying placeholder content while data is loading.
+ * 
+ * @example
+ * // Basic usage
+ * <SkeletonLoader />
+ * 
+ * @example
+ * // Custom configuration
+ * <SkeletonLoader lines={5} height="sm" className="mb-4" />
+ */
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   lines = 3,
   height = 'md',
@@ -31,6 +59,9 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   );
 };
 
+/**
+ * MenuItemSkeleton component for displaying a placeholder for a menu item while loading
+ */
 export const MenuItemSkeleton: React.FC = () => {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-6 animate-pulse">
@@ -54,6 +85,9 @@ export const MenuItemSkeleton: React.FC = () => {
   );
 };
 
+/**
+ * OrderCardSkeleton component for displaying a placeholder for an order card while loading
+ */
 export const OrderCardSkeleton: React.FC = () => {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">

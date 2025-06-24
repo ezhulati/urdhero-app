@@ -2,16 +2,67 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+/**
+ * Props for the Button component.
+ * @interface ButtonProps
+ */
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /**
+   * Visual style variant of the button
+   * @default 'primary'
+   */
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+  
+  /**
+   * Size variant of the button
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  
+  /**
+   * Whether the button is in a loading state
+   * @default false
+   */
   loading?: boolean;
+  
+  /**
+   * Content of the button
+   */
   children: React.ReactNode;
+  
+  /**
+   * Whether the button should take full width of its container
+   * @default false
+   */
   fullWidth?: boolean;
+  
+  /**
+   * Optional icon to display alongside text
+   */
   icon?: React.ReactNode;
+  
+  /**
+   * Position of the icon relative to the text
+   * @default 'left'
+   */
   iconPosition?: 'left' | 'right';
 }
 
+/**
+ * Button component for user interactions.
+ * 
+ * @example
+ * // Basic usage
+ * <Button>Click me</Button>
+ * 
+ * @example
+ * // With icon
+ * <Button icon={<Heart />} variant="outline">Add to favorites</Button>
+ * 
+ * @example
+ * // Loading state
+ * <Button loading>Processing...</Button>
+ */
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',

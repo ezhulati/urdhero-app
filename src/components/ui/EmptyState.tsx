@@ -2,16 +2,69 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
 
-interface EmptyStateProps {
+/**
+ * Props for the EmptyState component
+ * @interface EmptyStateProps
+ */
+export interface EmptyStateProps {
+  /**
+   * Icon or emoji to display
+   * @default '📭'
+   */
   icon?: string;
+  
+  /**
+   * Main title for the empty state
+   */
   title: string;
+  
+  /**
+   * Detailed description explaining the empty state
+   */
   description: string;
+  
+  /**
+   * Optional label for the action button
+   */
   actionLabel?: string;
+  
+  /**
+   * Callback function when the action button is clicked
+   */
   onAction?: () => void;
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
+  
+  /**
+   * Size variant of the empty state
+   * @default 'md'
+   */
   size?: 'sm' | 'md' | 'lg';
 }
 
+/**
+ * EmptyState component for displaying when a list or content area has no data.
+ * 
+ * @example
+ * // Basic usage
+ * <EmptyState
+ *   title="No results found"
+ *   description="Try adjusting your search or filters to find what you're looking for."
+ * />
+ * 
+ * @example
+ * // With action button
+ * <EmptyState
+ *   icon="🔍"
+ *   title="No items in cart"
+ *   description="Add items to your cart to see them here."
+ *   actionLabel="Browse menu"
+ *   onAction={() => navigate('/menu')}
+ * />
+ */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = '📭',
   title,

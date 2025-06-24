@@ -1,17 +1,79 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface CardProps {
+/**
+ * Props for the Card component
+ * @interface CardProps
+ */
+export interface CardProps {
+  /**
+   * Content to be rendered inside the card
+   */
   children: React.ReactNode;
+  
+  /**
+   * Additional CSS classes
+   */
   className?: string;
+  
+  /**
+   * Padding size
+   * @default 'md'
+   */
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  
+  /**
+   * Shadow depth
+   * @default 'sm'
+   */
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  
+  /**
+   * Whether the card should have hover effects
+   * @default false
+   */
   hover?: boolean;
+  
+  /**
+   * Whether the card should have a glass-like effect
+   * @default false
+   */
   glass?: boolean;
+  
+  /**
+   * Whether the card should have a gradient background
+   * @default false
+   */
   gradient?: boolean;
+  
+  /**
+   * Callback function when the card is clicked
+   */
   onClick?: () => void;
 }
 
+/**
+ * Card component for containing content in a distinct visual section.
+ * 
+ * @example
+ * // Basic usage
+ * <Card>
+ *   <h2>Card Title</h2>
+ *   <p>Card content</p>
+ * </Card>
+ * 
+ * @example
+ * // Interactive card with hover effects
+ * <Card hover onClick={() => console.log('Card clicked')}>
+ *   <p>Click me!</p>
+ * </Card>
+ * 
+ * @example
+ * // Card with gradient background
+ * <Card gradient shadow="lg">
+ *   <p>Beautiful gradient card</p>
+ * </Card>
+ */
 export const Card: React.FC<CardProps> = ({
   children,
   className = '',
