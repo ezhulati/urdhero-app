@@ -154,7 +154,7 @@ export const CustomerStatusBanner: React.FC<CustomerStatusBannerProps> = ({
       >
         <Card className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">

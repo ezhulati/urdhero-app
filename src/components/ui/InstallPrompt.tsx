@@ -22,6 +22,12 @@ export const InstallPrompt: React.FC = () => {
       return;
     }
 
+    // Check if user has dismissed the prompt before
+    const hasUserDismissed = localStorage.getItem('pwaPromptDismissed') === 'true';
+    if (hasUserDismissed) {
+      return;
+    }
+
     // Check if iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
@@ -38,12 +44,11 @@ export const InstallPrompt: React.FC = () => {
     // Show after a delay for iOS (since it doesn't support beforeinstallprompt)
     if (isIOSDevice) {
       const timeout = setTimeout(() => {
-        // Check if user hasn't dismissed the prompt before
-        const hasShownIOSPrompt = localStorage.getItem('hasShownIOSInstallPrompt');
-        if (!hasShownIOSPrompt) {
+        // Only show if user hasn't dismissed before
+        if (!hasUserDismissed) {
           setIsVisible(true);
         }
-      }, 60000); // Show after 1 minute for iOS users
+      }, 30000); // Show after 30 seconds for iOS users
       
       return () => clearTimeout(timeout);
     }
@@ -56,12 +61,11 @@ export const InstallPrompt: React.FC = () => {
   const handleInstall = async () => {
     if (isIOS) {
       // For iOS, show instructions
-      toast.success('Add to Home Screen by tapping the share icon and then "Add to Home Screen"', {
+      toast.success('Add to Home Screen by tapping the Share icon and then "Add to Home Screen"', {
         duration: 5000,
         icon: '📱'
       });
       setIsVisible(false);
-      localStorage.setItem('hasShownIOSInstallPrompt', 'true');
       return;
     }
 
@@ -88,10 +92,7 @@ export const InstallPrompt: React.FC = () => {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    
-    if (isIOS) {
-      localStorage.setItem('hasShownIOSInstallPrompt', 'true');
-    }
+    localStorage.setItem('pwaPromptDismissed', 'true');
   };
 
   if (!isVisible) return null;
@@ -115,7 +116,7 @@ export const InstallPrompt: React.FC = () => {
           </button>
           
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center flex-shrink-0">
               {isIOS ? (
                 <Smartphone className="w-6 h-6 text-white" />
               ) : (
@@ -125,7 +126,7 @@ export const InstallPrompt: React.FC = () => {
             
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 mb-1">
-                Install our app for a better experience
+                Install Urdhëro for a better experience
               </h3>
               <p className="text-sm text-gray-600 mb-3">
                 {isIOS 
