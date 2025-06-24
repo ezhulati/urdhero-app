@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/layout/Header';
@@ -10,7 +10,14 @@ import toast from 'react-hot-toast';
 export const RestaurantLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, currentUser, loading: authLoading } = useRestaurantAuth();
+  const { 
+    login, 
+    currentUser, 
+    loading: authLoading, 
+    isInDemoMode, 
+    enableDemoMode, 
+    disableDemoMode 
+  } = useRestaurantAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -130,6 +137,14 @@ export const RestaurantLoginPage: React.FC = () => {
             <p className="text-gray-600">
               Access restaurant management system
             </p>
+
+            {/* Demo Mode Indicator */}
+            {isInDemoMode && (
+              <div className="mt-4 flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <Zap className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-800">Demo Mode Active</span>
+              </div>
+            )}
           </div>
 
           {/* Form */}
@@ -222,8 +237,29 @@ export const RestaurantLoginPage: React.FC = () => {
             </div>
           </form>
 
+          {/* Demo Mode Controls */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-sm font-medium text-gray-700">Demo Mode</p>
+              <Button
+                onClick={isInDemoMode ? disableDemoMode : enableDemoMode}
+                variant={isInDemoMode ? 'secondary' : 'primary'}
+                size="sm"
+                className="text-xs"
+              >
+                {isInDemoMode ? 'Disable' : 'Enable'}
+              </Button>
+            </div>
+            
+            <p className="text-xs text-gray-500 mb-4">
+              {isInDemoMode 
+                ? 'Demo mode is active. Firebase authentication is bypassed.' 
+                : 'Enable demo mode to test without Firebase connection.'}
+            </p>
+          </div>
+
           {/* Demo Credentials */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-600 text-center mb-4">
               Demo credentials for testing:
             </p>
@@ -234,8 +270,15 @@ export const RestaurantLoginPage: React.FC = () => {
                   onClick={() => fillDemoCredentials(type as keyof typeof demoCredentials)}
                   className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <div className="font-medium text-gray-900 capitalize">{type}</div>
-                  <div className="text-sm text-gray-600">{creds.email}</div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900 capitalize">{type}</div>
+                      <div className="text-sm text-gray-600">{creds.email}</div>
+                    </div>
+                    {isInDemoMode && (
+                      <Zap className="w-4 h-4 text-amber-500" />
+                    )}
+                  </div>
                 </button>
               ))}
             </div>

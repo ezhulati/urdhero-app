@@ -15,14 +15,76 @@ export interface RestaurantStaffUser {
   displayName: string | null;
   role: 'admin' | 'manager' | 'staff' | 'kitchen';
   venueId: string;
+  isDemo?: boolean;
 }
+
+// Demo mode detection
+const isDemoMode = () => {
+  return localStorage.getItem('restaurant-demo-mode') === 'true' || 
+         import.meta.env.VITE_DEMO_MODE === 'true';
+};
+
+// Demo user data
+const demoUsers: Record<string, RestaurantStaffUser> = {
+  'admin@beachbar.al': {
+    uid: 'demo-admin-001',
+    email: 'admin@beachbar.al',
+    displayName: 'Demo Administrator',
+    role: 'admin',
+    venueId: 'demo-venue-001',
+    isDemo: true
+  },
+  'staff@beachbar.al': {
+    uid: 'demo-staff-001',
+    email: 'staff@beachbar.al',
+    displayName: 'Demo Staff Member',
+    role: 'staff',
+    venueId: 'demo-venue-001',
+    isDemo: true
+  },
+  'kitchen@beachbar.al': {
+    uid: 'demo-kitchen-001',
+    email: 'kitchen@beachbar.al',
+    displayName: 'Demo Kitchen Staff',
+    role: 'kitchen',
+    venueId: 'demo-venue-001',
+    isDemo: true
+  }
+};
+
+const demoPasswords: Record<string, string> = {
+  'admin@beachbar.al': 'admin123',
+  'staff@beachbar.al': 'staff123',
+  'kitchen@beachbar.al': 'kitchen123'
+};
 
 export const useRestaurantAuth = () => {
   const [currentUser, setCurrentUser] = useState<RestaurantStaffUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInDemoMode, setIsInDemoMode] = useState(false);
 
-  // Subscribe to auth state changes
+  // Check for demo mode and existing demo session
   useEffect(() => {
+    const demoMode = isDemoMode();
+    setIsInDemoMode(demoMode);
+
+    if (demoMode) {
+      // Check for existing demo session
+      const demoSession = localStorage.getItem('restaurant-demo-session');
+      if (demoSession) {
+        try {
+          const sessionData = JSON.parse(demoSession);
+          setCurrentUser(sessionData);
+        } catch (error) {
+          console.error('Error parsing demo session:', error);
+          localStorage.removeItem('restaurant-demo-session');
+        }
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Regular Firebase auth subscription
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
@@ -59,38 +121,86 @@ export const useRestaurantAuth = () => {
     return () => unsubscribe();
   }, []);
 
+  // Demo login
+  const demoLogin = async (email: string, password: string) => {
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const user = demoUsers[email];
+    const correctPassword = demoPasswords[email];
+
+    if (!user || password !== correctPassword) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Store demo session
+    localStorage.setItem('restaurant-demo-session', JSON.stringify(user));
+    setCurrentUser(user);
+    
+    return {
+      role: user.role,
+      venueId: user.venueId,
+      isDemo: true
+    };
+  };
+
   // Login with email and password
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // Get custom claims to verify restaurant access
-      const { claims } = await userCredential.user.getIdTokenResult();
-      
-      if (!claims.venueId || !claims.role) {
-        // Not a restaurant staff account
-        await signOut(auth);
-        throw new Error('This account does not have restaurant staff access');
+
+      // Try demo mode first if enabled or if Firebase fails
+      if (isInDemoMode) {
+        const result = await demoLogin(email, password);
+        toast.success('Demo login successful');
+        return result;
       }
-      
-      // Update last login
+
+      // Try Firebase authentication
       try {
-        const userDocRef = doc(db, 'staff', userCredential.user.uid);
-        await updateDoc(userDocRef, {
-          lastLoginAt: serverTimestamp()
-        });
-      } catch (err) {
-        // Non-critical error, just log it
-        console.warn('Failed to update last login time:', err);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Get custom claims to verify restaurant access
+        const { claims } = await userCredential.user.getIdTokenResult();
+        
+        if (!claims.venueId || !claims.role) {
+          // Not a restaurant staff account
+          await signOut(auth);
+          throw new Error('This account does not have restaurant staff access');
+        }
+        
+        // Update last login
+        try {
+          const userDocRef = doc(db, 'staff', userCredential.user.uid);
+          await updateDoc(userDocRef, {
+            lastLoginAt: serverTimestamp()
+          });
+        } catch (err) {
+          // Non-critical error, just log it
+          console.warn('Failed to update last login time:', err);
+        }
+        
+        toast.success('Login successful');
+        return claims;
+      } catch (firebaseError: any) {
+        // If Firebase fails with network error, try demo mode as fallback
+        if (firebaseError.code === 'auth/network-request-failed') {
+          console.warn('Firebase network failed, falling back to demo mode');
+          localStorage.setItem('restaurant-demo-mode', 'true');
+          setIsInDemoMode(true);
+          
+          const result = await demoLogin(email, password);
+          toast.success('Demo login successful (Firebase unavailable)');
+          return result;
+        }
+        
+        // Re-throw other Firebase errors
+        throw firebaseError;
       }
-      
-      toast.success('Login successful');
-      return claims;
     } catch (error: any) {
       console.error('Login error:', error);
       
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.message.includes('Invalid email or password')) {
         toast.error('Invalid email or password');
       } else if (error.code === 'auth/too-many-requests') {
         toast.error('Too many failed login attempts. Please try again later');
@@ -107,8 +217,18 @@ export const useRestaurantAuth = () => {
   // Logout
   const logout = async () => {
     try {
-      await signOut(auth);
-      toast.success('Logged out successfully');
+      if (isInDemoMode || currentUser?.isDemo) {
+        // Demo logout
+        localStorage.removeItem('restaurant-demo-session');
+        localStorage.removeItem('restaurant-demo-mode');
+        setCurrentUser(null);
+        setIsInDemoMode(false);
+        toast.success('Demo session ended');
+      } else {
+        // Firebase logout
+        await signOut(auth);
+        toast.success('Logged out successfully');
+      }
     } catch (error: any) {
       console.error('Logout error:', error);
       toast.error(error.message || 'Failed to logout');
@@ -119,6 +239,16 @@ export const useRestaurantAuth = () => {
   // Reset password
   const resetPassword = async (email: string) => {
     try {
+      if (isInDemoMode) {
+        // Demo password reset
+        if (demoUsers[email]) {
+          toast.success('Demo: Password reset email sent. Use the demo credentials to login.');
+        } else {
+          toast.error('No demo account found with this email');
+        }
+        return;
+      }
+
       await sendPasswordResetEmail(auth, email);
       toast.success('Password reset email sent. Check your inbox.');
     } catch (error: any) {
@@ -140,6 +270,30 @@ export const useRestaurantAuth = () => {
       return null;
     }
     
+    if (currentUser.isDemo) {
+      // Return demo restaurant info
+      return {
+        id: 'demo-venue-001',
+        name: 'Demo Beach Bar',
+        address: '123 Demo Street, Demo City',
+        phone: '+355 69 123 4567',
+        email: 'info@demobeachbar.al',
+        description: 'A beautiful demo beach bar for testing purposes',
+        cuisine: ['Mediterranean', 'Seafood', 'Cocktails'],
+        priceRange: '$$',
+        hours: {
+          monday: { open: '10:00', close: '23:00' },
+          tuesday: { open: '10:00', close: '23:00' },
+          wednesday: { open: '10:00', close: '23:00' },
+          thursday: { open: '10:00', close: '23:00' },
+          friday: { open: '10:00', close: '24:00' },
+          saturday: { open: '10:00', close: '24:00' },
+          sunday: { open: '10:00', close: '23:00' }
+        },
+        isDemo: true
+      };
+    }
+    
     try {
       const venueDocRef = doc(db, 'venues', currentUser.venueId);
       const venueDoc = await getDoc(venueDocRef);
@@ -155,6 +309,22 @@ export const useRestaurantAuth = () => {
     }
   };
 
+  // Enable demo mode manually
+  const enableDemoMode = () => {
+    localStorage.setItem('restaurant-demo-mode', 'true');
+    setIsInDemoMode(true);
+    toast.success('Demo mode enabled');
+  };
+
+  // Disable demo mode
+  const disableDemoMode = () => {
+    localStorage.removeItem('restaurant-demo-mode');
+    localStorage.removeItem('restaurant-demo-session');
+    setIsInDemoMode(false);
+    setCurrentUser(null);
+    toast.success('Demo mode disabled');
+  };
+
   return {
     currentUser,
     loading,
@@ -162,6 +332,10 @@ export const useRestaurantAuth = () => {
     logout,
     resetPassword,
     getRestaurantInfo,
-    isAuthenticated: !!currentUser
+    isAuthenticated: !!currentUser,
+    isInDemoMode,
+    enableDemoMode,
+    disableDemoMode,
+    demoUsers: Object.keys(demoUsers)
   };
 };
