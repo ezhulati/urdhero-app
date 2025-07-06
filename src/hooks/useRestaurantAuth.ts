@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  User,
+  updateProfile
 } from 'firebase/auth';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 export interface RestaurantStaffUser {
