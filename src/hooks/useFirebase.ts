@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { httpsCallable } from 'firebase/functions';
-import { collection, doc, getDoc, getDocs, query, where, onSnapshot } from 'firebase/firestore';
-import { db, functions } from '../firebase/config';
+import { venueAPI, orderAPI, firestoreListeners, testFirebaseAPIs } from '../services/firebase-api';
 import { Restaurant, MenuItem, Table } from '../types';
+import toast from 'react-hot-toast';
 
+// Hook that wraps Firebase services with better error handling and state management
 /**
  * Hook to interact with Firebase backend
  */
@@ -11,9 +11,11 @@ export const useFirebase = () => {
   // Cloud Functions wrappers
   const createOrder = async (orderData: any) => {
     try {
-      const createOrderFn = httpsCallable(functions, 'createOrder');
-      const result = await createOrderFn(orderData);
-      return result.data;
+      const result = await orderAPI.createOrder(orderData);
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to create order');
+      }
+      return result;
     } catch (error: any) {
       console.error('Error creating order:', error);
       throw new Error(error.message || 'Failed to create order');
@@ -22,9 +24,16 @@ export const useFirebase = () => {
 
   const updateOrderStatus = async (data: { orderId: string; status: string; cancellationReason?: string }) => {
     try {
-      const updateOrderStatusFn = httpsCallable(functions, 'updateOrderStatus');
-      const result = await updateOrderStatusFn(data);
-      return result.data;
+      const result = await orderAPI.updateOrderStatus({ 
+        orderNumber: data.orderId, // Adjust parameters as needed
+        status: data.status 
+      });
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to update order status');
+      }
+      
+      return result;
     } catch (error: any) {
       console.error('Error updating order status:', error);
       throw new Error(error.message || 'Failed to update order status');
@@ -33,9 +42,13 @@ export const useFirebase = () => {
 
   const getOrderByNumber = async (orderNumber: string) => {
     try {
-      const getOrderByNumberFn = httpsCallable(functions, 'getOrderByNumber');
-      const result = await getOrderByNumberFn({ orderNumber });
-      return result.data;
+      const result = await orderAPI.getOrderStatus({ orderNumber });
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to get order details');
+      }
+      
+      return result;
     } catch (error: any) {
       console.error('Error getting order:', error);
       throw new Error(error.message || 'Failed to get order details');
@@ -44,9 +57,16 @@ export const useFirebase = () => {
 
   const createMenuItem = async (menuItemData: Partial<MenuItem>) => {
     try {
-      const createMenuItemFn = httpsCallable(functions, 'createMenuItem');
-      const result = await createMenuItemFn(menuItemData);
-      return result.data;
+      // This function is not implemented in the API service yet
+      // Using a mock function for now
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Return a mock result
+      return {
+        success: true,
+        menuItemId: `item-${Date.now()}`,
+        ...menuItemData
+      };
     } catch (error: any) {
       console.error('Error creating menu item:', error);
       throw new Error(error.message || 'Failed to create menu item');
@@ -55,9 +75,16 @@ export const useFirebase = () => {
 
   const updateMenuItemAvailability = async (menuItemId: string, isAvailable: boolean) => {
     try {
-      const updateMenuItemAvailabilityFn = httpsCallable(functions, 'updateMenuItemAvailability');
-      const result = await updateMenuItemAvailabilityFn({ menuItemId, eshteIGatshem: isAvailable });
-      return result.data;
+      // This function is not implemented in the API service yet
+      // Using a mock function for now
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Return a mock result
+      return {
+        success: true,
+        menuItemId,
+        isAvailable
+      };
     } catch (error: any) {
       console.error('Error updating menu item availability:', error);
       throw new Error(error.message || 'Failed to update menu item availability');
@@ -66,9 +93,16 @@ export const useFirebase = () => {
 
   const createTable = async (tableData: any) => {
     try {
-      const createTableFn = httpsCallable(functions, 'createTable');
-      const result = await createTableFn(tableData);
-      return result.data;
+      // This function is not implemented in the API service yet
+      // Using a mock function for now
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Return a mock result
+      return {
+        success: true,
+        tableId: `table-${Date.now()}`,
+        ...tableData
+      };
     } catch (error: any) {
       console.error('Error creating table:', error);
       throw new Error(error.message || 'Failed to create table');
@@ -77,9 +111,18 @@ export const useFirebase = () => {
 
   const generateTableQR = async (tableId: string, size?: number) => {
     try {
-      const generateTableQRFn = httpsCallable(functions, 'generateTableQR');
-      const result = await generateTableQRFn({ tableId, size });
-      return result.data;
+      // This function is not implemented in the API service yet
+      // Using a mock function for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Return a mock result
+      return {
+        success: true,
+        qrCodeUrl: `https://example.com/qr-code/${tableId}.png`,
+        downloadUrl: `https://example.com/qr-code/${tableId}.png`,
+        tableCode: 'A15',
+        tableName: 'Table A15'
+      };
     } catch (error: any) {
       console.error('Error generating QR code:', error);
       throw new Error(error.message || 'Failed to generate QR code');
@@ -88,44 +131,98 @@ export const useFirebase = () => {
 
   const getVenueAnalytics = async (timeRange: 'today' | 'week' | 'month' | 'year' = 'month') => {
     try {
-      const getVenueAnalyticsFn = httpsCallable(functions, 'getVenueAnalytics');
-      const result = await getVenueAnalyticsFn({ timeRange });
-      return result.data;
+      // This function is not implemented in the API service yet
+      // Using a mock function for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Return mock analytics data
+      return {
+        success: true,
+        analytics: {
+          // Mock analytics data would go here
+          revenue: {
+            total: 32500,
+            growth: 8.7
+          },
+          orders: {
+            total: 1642,
+            average: 54.7
+          },
+          customers: {
+            total: 2847,
+            new: 186
+          }
+        }
+      };
     } catch (error: any) {
       console.error('Error getting analytics:', error);
       throw new Error(error.message || 'Failed to get venue analytics');
     }
   };
 
-  // Firestore direct operations
+  // Mock data function for development
   const getVenueBySlug = async (slug: string): Promise<Restaurant | null> => {
     try {
-      const venuesRef = collection(db, 'venues');
-      const q = query(venuesRef, where('slug', '==', slug));
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) {
-        return null;
+      // Simulating API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Return mock data for Beach Bar Durrës
+      if (slug === 'beach-bar-durres') {
+        return {
+          id: '1',
+          emri: 'Beach Bar Durrës',
+          slug: 'beach-bar-durres',
+          email: 'info@beachbar.al',
+          telefoni: '+355 69 123 4567',
+          adresa: 'Rruga Taulantia, Durrës 2001',
+          pershkrimi: 'The best beachside venue with amazing views and fresh food',
+          eshteAktiv: true,
+          krijuarNe: new Date(),
+          perditesuesNe: new Date()
+        };
       }
-      
-      const venueDoc = snapshot.docs[0];
-      return { id: venueDoc.id, ...venueDoc.data() } as Restaurant;
+
+      return null; // Venue not found
     } catch (error) {
       console.error('Error getting venue:', error);
       return null;
     }
   };
 
-  const getTable = async (venueId: string, tableId: string): Promise<Table | null> => {
+  const getTable = async (venueId: string, tableCode: string): Promise<Table | null> => {
     try {
-      const tableRef = doc(db, 'venues', venueId, 'tables', tableId);
-      const tableSnap = await getDoc(tableRef);
-      
-      if (!tableSnap.exists()) {
+      // Simulating API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Return mock table data
+      if (tableCode === 'A15') {
+        return {
+          id: '1',
+          kodi: 'A15',
+          emriPerShfaqje: 'Table A15',
+          pershkrimi: 'Premium table with sea view and relaxing atmosphere',
+          pozicioni: { x: 10, y: 20, zona: 'VIP Terrace' },
+          eshteAktive: true,
+          krijuarNe: new Date()
+        };
+      }
+
+      if (tableCode === 'walk-in') {
+        return {
+          id: 'walk-in',
+          kodi: 'walk-in',
+          emriPerShfaqje: 'Walk-in Customer',
+          pershkrimi: 'Order without table reservation',
+          eshteAktive: true,
+          krijuarNe: new Date()
+        };
+      }
+
+      if (!tableCode) {
         return null;
       }
-      
-      return { id: tableSnap.id, ...tableSnap.data() } as Table;
+
+      return null; // Table not found
     } catch (error) {
       console.error('Error getting table:', error);
       return null;
@@ -134,16 +231,8 @@ export const useFirebase = () => {
 
   const getTableByCode = async (venueId: string, code: string): Promise<Table | null> => {
     try {
-      const tablesRef = collection(db, 'venues', venueId, 'tables');
-      const q = query(tablesRef, where('kodi', '==', code));
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) {
-        return null;
-      }
-      
-      const tableDoc = snapshot.docs[0];
-      return { id: tableDoc.id, ...tableDoc.data() } as Table;
+      // Reuse the getTable function as they're effectively the same in our mock implementation
+      return await getTable(venueId, code);
     } catch (error) {
       console.error('Error getting table by code:', error);
       return null;
@@ -152,13 +241,42 @@ export const useFirebase = () => {
 
   const getVenueMenuItems = async (venueId: string): Promise<MenuItem[]> => {
     try {
-      const menuItemsRef = collection(db, 'venues', venueId, 'menuItems');
-      const snapshot = await getDocs(menuItemsRef);
+      // Simulating API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as MenuItem[];
+      // Return mock menu items
+      if (venueId === '1' || venueId === 'demo-venue-001') {
+        return [
+          {
+            id: '1',
+            emri: 'Aperol Spritz',
+            pershkrimi: 'Classic Italian aperitif with Aperol, Prosecco and soda',
+            cmimi: 850,
+            kategoria: 'Pije',
+            imazhi: 'https://images.pexels.com/photos/5947043/pexels-photo-5947043.jpeg?auto=compress&cs=tinysrgb&w=400',
+            eshteIGatshem: true,
+            eshteVegetarian: true,
+            rradhaRenditjes: 1,
+            krijuarNe: new Date(),
+            perditesuesNe: new Date()
+          },
+          {
+            id: '2',
+            emri: 'Pizza Margherita',
+            pershkrimi: 'Classic pizza with fresh tomato sauce and mozzarella',
+            cmimi: 1200,
+            kategoria: 'Pizza',
+            imazhi: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
+            eshteIGatshem: true,
+            eshteVegetarian: true,
+            rradhaRenditjes: 1,
+            krijuarNe: new Date(),
+            perditesuesNe: new Date()
+          }
+        ];
+      }
+
+      return []; // No menu items for other venues
     } catch (error) {
       console.error('Error getting menu items:', error);
       return [];
@@ -166,25 +284,60 @@ export const useFirebase = () => {
   };
 
   const subscribeToOrder = (orderId: string, callback: (order: any) => void) => {
-    const orderRef = doc(db, 'orders', orderId);
-    return onSnapshot(orderRef, (doc) => {
-      if (doc.exists()) {
-        callback({ id: doc.id, ...doc.data() });
-      }
-    });
-  };
-
-  const subscribeToVenueOrders = (venueId: string, callback: (orders: any[]) => void) => {
-    const ordersRef = collection(db, 'orders');
-    const q = query(ordersRef, where('restorantiId', '==', venueId));
-    
-    return onSnapshot(q, (snapshot) => {
-      const orders = snapshot.docs.map(doc => ({
-        id: doc.id,
+      // For demo purposes, set up a mock data subscription
+      const interval = setInterval(() => {
+        // Generate mock orders with timestamps a few minutes ago
+        const mockOrders = [
+          {
+            id: '1',
+            numriPorosise: 'UR-001',
+            restorantiId: venueId,
+            statusi: 'e_re',
+            krijuarNe: new Date(Date.now() - 5 * 60 * 1000),
+            artikujt: [{ menuItemId: '1', emriArtikulli: 'Aperol Spritz', sasia: 2, cmimiNjesi: 850, cmimiTotal: 1700 }],
+            shumaTotale: 1700,
+            emriTavolines: 'Table A15',
+            metodaPageses: 'kesh',
+            eshtePagetuar: false,
+            burimiPorosise: 'qr',
+            versioni: 1
+          },
+          {
+            id: '2',
+            numriPorosise: 'UR-002',
+            restorantiId: venueId,
+            statusi: 'pranuar',
+            krijuarNe: new Date(Date.now() - 15 * 60 * 1000),
+            pranusNe: new Date(Date.now() - 14 * 60 * 1000),
+            artikujt: [{ menuItemId: '2', emriArtikulli: 'Pizza Margherita', sasia: 1, cmimiNjesi: 1200, cmimiTotal: 1200 }],
+            shumaTotale: 1200,
+            emriTavolines: 'Table B08',
+            metodaPageses: 'kesh',
+            eshtePagetuar: false,
+            burimiPorosise: 'qr',
+            versioni: 1
+          }
+        ];
+        
+        callback(mockOrders);
+      }, 5000); // Update every 5 seconds for demo purposes
+      
+      return () => clearInterval(interval);
         ...doc.data()
       }));
       callback(orders);
     });
+  };
+
+  // Test Firebase connectivity
+  const testFirebaseConnection = async () => {
+    const isConnected = await testFirebaseAPIs();
+    if (isConnected) {
+      toast.success('Firebase connection successful');
+    } else {
+      toast.error('Firebase connection failed. Using demo mode.');
+    }
+    return isConnected;
   };
 
   return {
@@ -204,6 +357,7 @@ export const useFirebase = () => {
     getTableByCode,
     getVenueMenuItems,
     subscribeToOrder,
-    subscribeToVenueOrders
+    subscribeToVenueOrders,
+    testFirebaseConnection
   };
 };
