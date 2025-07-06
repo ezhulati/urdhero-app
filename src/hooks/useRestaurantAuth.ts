@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
   signInWithEmailAndPassword,
-  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db, checkFirebaseConnection } from '../lib/firebase';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -63,13 +63,24 @@ export const useRestaurantAuth = () => {
   const [loading, setLoading] = useState(true);
   const [isInDemoMode, setIsInDemoMode] = useState(false);
 
-  // Track network status for fallback to demo mode
+  // Track Firebase availability for UI feedback
   const [isFirebaseAvailable, setIsFirebaseAvailable] = useState(true);
 
   // Check for demo mode and existing demo session
   useEffect(() => {
     const demoMode = isDemoMode();
     setIsInDemoMode(demoMode);
+
+    // Check Firebase connectivity on component mount
+    checkFirebaseConnection().then(isAvailable => {
+      setIsFirebaseAvailable(isAvailable);
+      
+      // If Firebase is not available, enable demo mode automatically
+      if (!isAvailable && !demoMode) {
+        console.log('Firebase unavailable, automatically enabling demo mode');
+        enableDemoMode();
+      }
+    });
 
     if (demoMode) {
       // Check for existing demo session
@@ -87,41 +98,43 @@ export const useRestaurantAuth = () => {
       return;
     }
 
-    // Regular Firebase auth subscription
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          // Get custom claims to determine restaurant access
-          const { claims } = await user.getIdTokenResult();
-          
-          if (claims.venueId && claims.role) {
-            // This user has restaurant staff access
-            const staffUser: RestaurantStaffUser = {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              role: claims.role as any,
-              venueId: claims.venueId as string
-            };
+    // Only subscribe to Firebase auth if not in demo mode
+    if (!demoMode) {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            // Get custom claims to determine restaurant access
+            const { claims } = await user.getIdTokenResult();
             
-            setCurrentUser(staffUser);
-          } else {
-            // User is authenticated but not restaurant staff
+            if (claims.venueId && claims.role) {
+              // This user has restaurant staff access
+              const staffUser: RestaurantStaffUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                role: claims.role as any,
+                venueId: claims.venueId as string
+              };
+              
+              setCurrentUser(staffUser);
+            } else {
+              // User is authenticated but not restaurant staff
+              setCurrentUser(null);
+            }
+          } catch (error) {
+            console.error('Error checking staff claims:', error);
             setCurrentUser(null);
           }
-        } catch (error) {
-          console.error('Error checking staff claims:', error);
+        } else {
+          // User is not authenticated
           setCurrentUser(null);
         }
-      } else {
-        // User is not authenticated
-        setCurrentUser(null);
-      }
+        
+        setLoading(false);
+      });
       
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+      return () => unsubscribe();
+    }
   }, []);
 
   // Demo login
@@ -156,6 +169,23 @@ export const useRestaurantAuth = () => {
     try {
       setLoading(true);
       
+      // First check Firebase connectivity
+      const isConnected = await checkFirebaseConnection();
+      setIsFirebaseAvailable(isConnected);
+      
+      // If Firebase is not available, automatically use demo mode
+      if (!isConnected && !isInDemoMode) {
+        console.warn('Firebase unavailable, automatically enabling demo mode');
+        enableDemoMode();
+        
+        // Try demo login
+        const demoResult = await demoLogin(email, password);
+        toast.success('Demo login successful (Firebase unavailable)', {
+          icon: '🔌'
+        });
+        return demoResult;
+      }
+
       // Try demo mode first if enabled or if Firebase fails
       if (isInDemoMode) {
         const result = await demoLogin(email, password);
@@ -165,21 +195,6 @@ export const useRestaurantAuth = () => {
 
       // Try Firebase authentication
       try {
-        // Check if Firebase is available
-        const isConnected = await checkFirebaseConnection();
-        setIsFirebaseAvailable(isConnected);
-
-        if (!isConnected) {
-          // If Firebase is not available, try demo mode
-          console.warn('Firebase network failed, falling back to demo mode');
-          localStorage.setItem('restaurant-demo-mode', 'true');
-          setIsInDemoMode(true);
-          
-          const result = await demoLogin(email, password);
-          toast.success('Demo login successful (Firebase unavailable)');
-          return result;
-        }
-
         // Proceed with Firebase authentication
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
@@ -203,17 +218,23 @@ export const useRestaurantAuth = () => {
           console.warn('Failed to update last login time:', err);
         }
         
-        toast.success('Login successful');
+        toast.success('Login successful! Connected to Firebase', {
+          icon: '🔥'
+        });
         return claims;
       } catch (firebaseError: any) {
         // If Firebase authentication fails with network error, fall back to demo mode
-        if (firebaseError.code === 'auth/network-request-failed') {
+        if (firebaseError.code === 'auth/network-request-failed' || 
+            firebaseError.message?.includes('network') ||
+            firebaseError.code === 'auth/timeout') {
           console.warn('Firebase network failed, falling back to demo mode');
           localStorage.setItem('restaurant-demo-mode', 'true');
           setIsInDemoMode(true);
           
           const result = await demoLogin(email, password);
-          toast.success('Demo login successful (Firebase unavailable)');
+          toast.success('Demo login successful (Firebase unavailable)', {
+            icon: '🔌'
+          });
           return result;
         }
         
@@ -250,7 +271,9 @@ export const useRestaurantAuth = () => {
       } else {
         // Firebase logout
         await signOut(auth);
-        toast.success('Logged out successfully');
+        toast.success('Logged out successfully', {
+          icon: isInDemoMode ? '🎮' : '🔥'
+        });
       }
     } catch (error: any) {
       console.error('Logout error:', error);
@@ -333,19 +356,42 @@ export const useRestaurantAuth = () => {
   };
 
   // Enable demo mode manually
-  const enableDemoMode = () => {
+  const enableDemoMode = async () => {
     localStorage.setItem('restaurant-demo-mode', 'true');
     setIsInDemoMode(true);
-    toast.success('Demo mode enabled');
+    
+    // Check Firebase status
+    const isAvailable = await checkFirebaseConnection();
+    setIsFirebaseAvailable(isAvailable);
+    
+    toast.success(`Demo mode enabled ${!isAvailable ? '(Firebase unavailable)' : ''}`, {
+      icon: '🎮'
+    });
   };
 
   // Disable demo mode
-  const disableDemoMode = () => {
+  const disableDemoMode = async () => {
     localStorage.removeItem('restaurant-demo-mode');
     localStorage.removeItem('restaurant-demo-session');
     setIsInDemoMode(false);
-    setCurrentUser(null);
-    toast.success('Demo mode disabled');
+    
+    // Check Firebase connectivity
+    const isAvailable = await checkFirebaseConnection();
+    setIsFirebaseAvailable(isAvailable);
+    
+    if (isAvailable) {
+      setCurrentUser(null);
+      toast.success('Demo mode disabled. Using Firebase', {
+        icon: '🔥'
+      });
+    } else {
+      // If Firebase is not available, keep demo mode enabled
+      localStorage.setItem('restaurant-demo-mode', 'true');
+      setIsInDemoMode(true);
+      toast.error('Cannot disable demo mode: Firebase unavailable', {
+        icon: '🔌'
+      });
+    }
   };
 
   return {
