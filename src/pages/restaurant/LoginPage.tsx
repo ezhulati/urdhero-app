@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Zap, Wifi, WifiOff } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/layout/Header';
@@ -10,13 +10,14 @@ import toast from 'react-hot-toast';
 export const RestaurantLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { 
+  const {
     login, 
     currentUser, 
     loading: authLoading, 
     isInDemoMode, 
     enableDemoMode, 
-    disableDemoMode 
+    disableDemoMode,
+    isFirebaseAvailable
   } = useRestaurantAuth();
 
   const [formData, setFormData] = useState({
@@ -49,10 +50,12 @@ export const RestaurantLoginPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const validateForm = () => {
@@ -139,9 +142,17 @@ export const RestaurantLoginPage: React.FC = () => {
 
             {/* Demo Mode Indicator */}
             {isInDemoMode && (
-              <div className="mt-4 flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <Zap className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-800">Demo Mode Active</span>
+              <div className="mt-4">
+                <div className="flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                  <Zap className="w-4 h-4 text-amber-600" />
+                  <span className="text-sm font-medium text-amber-800">Demo Mode Active</span>
+                </div>
+                {!isFirebaseAvailable && (
+                  <div className="mt-2 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                    <WifiOff className="w-4 h-4 text-red-600" />
+                    <span className="text-sm font-medium text-red-800">Firebase Unavailable - Using Demo Mode</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -239,10 +250,23 @@ export const RestaurantLoginPage: React.FC = () => {
           {/* Demo Mode Controls */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center mb-4">
-              <p className="text-sm font-medium text-gray-700">Demo Mode</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-gray-700">Demo Mode</p>
+                {isFirebaseAvailable ? (
+                  <Badge variant="success" size="sm">
+                    <Wifi className="w-3 h-3 mr-1" />
+                    Firebase Connected
+                  </Badge>
+                ) : (
+                  <Badge variant="danger" size="sm">
+                    <WifiOff className="w-3 h-3 mr-1" />
+                    Firebase Offline
+                  </Badge>
+                )}
+              </div>
               <Button
                 onClick={isInDemoMode ? disableDemoMode : enableDemoMode}
-                variant={isInDemoMode ? 'secondary' : 'primary'}
+                variant={isInDemoMode ? "secondary" : "primary"}
                 size="sm"
                 className="text-xs"
               >
@@ -251,9 +275,11 @@ export const RestaurantLoginPage: React.FC = () => {
             </div>
             
             <p className="text-xs text-gray-500 mb-4">
-              {isInDemoMode 
-                ? 'Demo mode is active. Firebase authentication is bypassed.' 
-                : 'Enable demo mode to test without Firebase connection.'}
+              {!isFirebaseAvailable 
+                ? 'Firebase is currently unavailable. Demo mode has been automatically enabled.' 
+                : isInDemoMode 
+                  ? 'Demo mode is active. Firebase authentication is bypassed.' 
+                  : 'Enable demo mode to test without Firebase connection.'}
             </p>
           </div>
 
@@ -272,7 +298,10 @@ export const RestaurantLoginPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium text-gray-900 capitalize">{type}</div>
-                      <div className="text-sm text-gray-600">{creds.email}</div>
+                      <div className="text-sm text-gray-600">
+                        {creds.email}
+                        <span className="text-xs text-gray-400 ml-2">(Password: {creds.password})</span>
+                      </div>
                     </div>
                     {isInDemoMode && (
                       <Zap className="w-4 h-4 text-amber-500" />
@@ -287,6 +316,9 @@ export const RestaurantLoginPage: React.FC = () => {
           <div className="mt-6 pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500">
               Powered by Urdhëro Platform
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {isFirebaseAvailable ? 'Connected to Firebase' : 'Offline Mode - Demo Only'}
             </p>
           </div>
         </Card>

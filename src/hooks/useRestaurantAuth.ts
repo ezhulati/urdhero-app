@@ -1,16 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
-  User,
-  updateProfile
 } from 'firebase/auth';
-import { auth, db } from '../firebase/config';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db, checkFirebaseConnection } from '../lib/firebase';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
 export interface RestaurantStaffUser {
@@ -25,7 +21,7 @@ export interface RestaurantStaffUser {
 // Demo mode detection
 const isDemoMode = () => {
   return localStorage.getItem('restaurant-demo-mode') === 'true' || 
-         import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
+         import.meta.env.VITE_DEMO_MODE === 'true';
 };
 
 // Demo user data
@@ -66,6 +62,9 @@ export const useRestaurantAuth = () => {
   const [currentUser, setCurrentUser] = useState<RestaurantStaffUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isInDemoMode, setIsInDemoMode] = useState(false);
+
+  // Track network status for fallback to demo mode
+  const [isFirebaseAvailable, setIsFirebaseAvailable] = useState(true);
 
   // Check for demo mode and existing demo session
   useEffect(() => {
@@ -127,30 +126,36 @@ export const useRestaurantAuth = () => {
 
   // Demo login
   const demoLogin = async (email: string, password: string) => {
-    // Simulate loading delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const user = demoUsers[email];
-    const correctPassword = demoPasswords[email];
+      const user = demoUsers[email];
+      const correctPassword = demoPasswords[email];
 
-    if (!user || password !== correctPassword) {
-      throw new Error('Invalid email or password');
+      if (!user || password !== correctPassword) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Store demo session
+      localStorage.setItem('restaurant-demo-session', JSON.stringify(user));
+      setCurrentUser(user);
+      
+      return {
+        role: user.role,
+        venueId: user.venueId,
+        isDemo: true
+      };
+    } catch (error) {
+      throw error;
     }
-
-    // Store demo session
-    localStorage.setItem('restaurant-demo-session', JSON.stringify(user));
-    setCurrentUser(user);
-    
-    return {
-      role: user.role,
-      venueId: user.venueId,
-      isDemo: true
-    };
   };
 
   // Login with email and password
   const login = async (email: string, password: string) => {
     try {
+      setLoading(true);
+      
       // Try demo mode first if enabled or if Firebase fails
       if (isInDemoMode) {
         const result = await demoLogin(email, password);
@@ -159,30 +164,62 @@ export const useRestaurantAuth = () => {
       }
 
       // Try Firebase authentication
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // Get custom claims to verify restaurant access
-      const { claims } = await userCredential.user.getIdTokenResult();
-      
-      if (!claims.venueId || !claims.role) {
-        // Not a restaurant staff account
-        await signOut(auth);
-        throw new Error('This account does not have restaurant staff access');
-      }
-      
-      // Update last login
       try {
-        const userDocRef = doc(db, 'staff', userCredential.user.uid);
-        await updateDoc(userDocRef, {
-          lastLoginAt: serverTimestamp()
-        });
-      } catch (err) {
-        // Non-critical error, just log it
-        console.warn('Failed to update last login time:', err);
+        // Check if Firebase is available
+        const isConnected = await checkFirebaseConnection();
+        setIsFirebaseAvailable(isConnected);
+
+        if (!isConnected) {
+          // If Firebase is not available, try demo mode
+          console.warn('Firebase network failed, falling back to demo mode');
+          localStorage.setItem('restaurant-demo-mode', 'true');
+          setIsInDemoMode(true);
+          
+          const result = await demoLogin(email, password);
+          toast.success('Demo login successful (Firebase unavailable)');
+          return result;
+        }
+
+        // Proceed with Firebase authentication
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Get custom claims to verify restaurant access
+        const { claims } = await userCredential.user.getIdTokenResult();
+        
+        if (!claims.venueId || !claims.role) {
+          // Not a restaurant staff account
+          await signOut(auth);
+          throw new Error('This account does not have restaurant staff access');
+        }
+        
+        // Update last login
+        try {
+          const userDocRef = doc(db, 'staff', userCredential.user.uid);
+          await updateDoc(userDocRef, {
+            lastLoginAt: serverTimestamp()
+          });
+        } catch (err) {
+          // Non-critical error, just log it
+          console.warn('Failed to update last login time:', err);
+        }
+        
+        toast.success('Login successful');
+        return claims;
+      } catch (firebaseError: any) {
+        // If Firebase authentication fails with network error, fall back to demo mode
+        if (firebaseError.code === 'auth/network-request-failed') {
+          console.warn('Firebase network failed, falling back to demo mode');
+          localStorage.setItem('restaurant-demo-mode', 'true');
+          setIsInDemoMode(true);
+          
+          const result = await demoLogin(email, password);
+          toast.success('Demo login successful (Firebase unavailable)');
+          return result;
+        }
+        
+        // Re-throw other Firebase errors
+        throw firebaseError;
       }
-      
-      toast.success('Login successful');
-      return claims;
     } catch (error: any) {
       console.error('Login error:', error);
       
@@ -195,6 +232,8 @@ export const useRestaurantAuth = () => {
       }
       
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -215,7 +254,7 @@ export const useRestaurantAuth = () => {
       }
     } catch (error: any) {
       console.error('Logout error:', error);
-      toast.error('Failed to logout');
+      toast.error(error.message || 'Failed to logout');
       throw error;
     }
   };
@@ -319,7 +358,8 @@ export const useRestaurantAuth = () => {
     isAuthenticated: !!currentUser,
     isInDemoMode,
     enableDemoMode,
-    disableDemoMode,
+    disableDemoMode, 
+    isFirebaseAvailable,
     demoUsers: Object.keys(demoUsers)
   };
 };
