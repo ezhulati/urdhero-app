@@ -291,7 +291,7 @@ export const useFirebase = () => {
           {
             id: '1',
             numriPorosise: 'UR-001',
-            restorantiId: venueId,
+            restorantiId: 'venueId',
             statusi: 'e_re',
             krijuarNe: new Date(Date.now() - 5 * 60 * 1000),
             artikujt: [{ menuItemId: '1', emriArtikulli: 'Aperol Spritz', sasia: 2, cmimiNjesi: 850, cmimiTotal: 1700 }],
@@ -305,7 +305,7 @@ export const useFirebase = () => {
           {
             id: '2',
             numriPorosise: 'UR-002',
-            restorantiId: venueId,
+            restorantiId: 'venueId',
             statusi: 'pranuar',
             krijuarNe: new Date(Date.now() - 15 * 60 * 1000),
             pranusNe: new Date(Date.now() - 14 * 60 * 1000),
@@ -323,10 +323,6 @@ export const useFirebase = () => {
       }, 5000); // Update every 5 seconds for demo purposes
       
       return () => clearInterval(interval);
-        ...doc.data()
-      }));
-      callback(orders);
-    });
   };
 
   // Test Firebase connectivity
@@ -357,7 +353,6 @@ export const useFirebase = () => {
     getTableByCode,
     getVenueMenuItems,
     subscribeToOrder,
-    subscribeToVenueOrders,
     testFirebaseConnection
   };
 };
