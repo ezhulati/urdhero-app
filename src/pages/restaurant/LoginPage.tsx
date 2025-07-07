@@ -281,8 +281,6 @@ export const RestaurantLoginPage: React.FC = () => {
                 : isInDemoMode 
                   ? 'Demo mode is active. Firebase authentication is bypassed.' 
                   : 'Enable demo mode to test without Firebase connection.'}
-                  ? 'Demo mode is active. Firebase authentication is bypassed.' 
-                  : 'Enable demo mode to test without Firebase connection.'}
             </p>
           </div>
 
