@@ -41,29 +41,6 @@ export const useFirebase = () => {
         throw new Error(result.message || 'Failed to create order');
       }
       return result;
-        result = await orderAPI.createOrder(orderData);
-      } catch (apiError) {
-        console.error('Error calling Firebase createOrder function:', apiError);
-        
-        // Fall back to mock implementation for development/demo
-        console.log('Using mock order creation implementation');
-        
-        // Create mock order number and simulate API response
-        const orderNumber = `UR-${Date.now().toString().slice(-6)}`;
-        result = {
-          success: true,
-          orderId: `mock-${Date.now()}`,
-          orderNumber,
-          totalAmount: orderData.items.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0),
-          estimatedPreparationTime: 20,
-          trackingUrl: `/order/${orderNumber}`
-        };
-      }
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to create order');
-      }
-      return result;
     } catch (error: any) {
       console.error('Error creating order:', error);
       throw new Error(error.message || 'Failed to create order');
@@ -75,29 +52,6 @@ export const useFirebase = () => {
       let result;
       try {
         // Try to use Firebase API first
-        result = await orderAPI.updateOrderStatus({ 
-          orderNumber: data.orderId,
-          status: data.status,
-          cancellationReason: data.cancellationReason
-        });
-      } catch (apiError) {
-        console.error('Error calling Firebase updateOrderStatus function:', apiError);
-        
-        // Fall back to mock implementation
-        console.log('Using mock order status update implementation');
-        
-        // Simulate API response
-        result = {
-          success: true,
-          newStatus: data.status
-        };
-      }
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to update order status');
-      }
-      
-      return result;
         result = await orderAPI.updateOrderStatus({ 
           orderNumber: data.orderId,
           status: data.status,
@@ -152,46 +106,6 @@ export const useFirebase = () => {
       }
       
       return result.order;
-        result = await orderAPI.getOrderStatus({ orderNumber });
-      } catch (apiError) {
-        console.error('Error calling Firebase getOrderStatus function:', apiError);
-        
-        // Fall back to mock implementation
-        console.log('Using mock order status implementation');
-        
-        // Create mock order data
-        result = {
-          success: true,
-          order: {
-            id: `mock-${orderNumber}`,
-            orderNumber,
-            status: 'preparing',
-            totalAmount: 1700,
-            items: [
-              { menuItemId: '1', name: 'Aperol Spritz', quantity: 2, price: 850, total: 1700 }
-            ],
-            specialInstructions: '',
-            tableName: 'Table A15',
-            createdAt: new Date(Date.now() - 15 * 60000),
-            timestamps: {
-              created: new Date(Date.now() - 15 * 60000).toISOString(),
-              accepted: new Date(Date.now() - 10 * 60000).toISOString(),
-              preparing: new Date(Date.now() - 5 * 60000).toISOString()
-            },
-            venue: {
-              id: 'demo-venue-001',
-              name: 'Beach Bar Durrës',
-              type: 'beach_bar'
-            }
-          }
-        };
-      }
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to get order details');
-      }
-      
-      return result;
     } catch (error: any) {
       console.error('Error getting order:', error);
       throw new Error(error.message || 'Failed to get order details');
@@ -434,10 +348,7 @@ export const useFirebase = () => {
       console.error('Error setting up order subscription:', error);
       
       // For demo purposes, set up a mock data subscription
-      const interval = simulateOrderUpdates(orderId, callback);
-      
-      return () => clearInterval(interval);
-    }
+      const interval = setInterval(() => {
         // Mock a single order that updates every 5 seconds
         const mockOrder = {
             id: '1',
@@ -489,19 +400,14 @@ export const useFirebase = () => {
     getTableByCode,
     getVenueMenuItems, 
     subscribeToOrder, 
-    testFirebaseConnection: async () => {
-      const isConnected = await testFirebaseAPIs();
-      if (isConnected) {
-        toast.success('Firebase connection successful!');
-      } else {
-        toast.error('Firebase connection failed - using demo mode');
-      }
-      return isConnected;
-    }
+    testFirebaseConnection,
     isFirebaseAvailable: async () => {
       try {
         const isConnected = await testFirebaseConnection();
         return isConnected;
       } catch (error) {
-import { venueAPI, orderAPI, firestoreListeners, testFirebaseAPIs, getMockOrderUpdate, simulateOrderUpdates } from '../services/firebase-api';
         return false;
+      }
+    }
+  };
+};

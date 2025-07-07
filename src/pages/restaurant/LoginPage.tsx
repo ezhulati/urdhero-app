@@ -19,7 +19,6 @@ export const RestaurantLoginPage: React.FC = () => {
     enableDemoMode,
     disableDemoMode,
     isFirebaseAvailable
-    isFirebaseAvailable
   } = useRestaurantAuth();
 
   const [formData, setFormData] = useState({
@@ -155,14 +154,6 @@ export const RestaurantLoginPage: React.FC = () => {
                     <span className="text-sm font-medium text-red-800">Firebase Unavailable - Using Demo Mode</span>
                   </div>
                 )}
-                  <span className="text-sm font-medium text-amber-800">Demo Mode Active</span>
-                </div>
-                {!isFirebaseAvailable && (
-                  <div className="mt-2 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-                    <WifiOff className="w-4 h-4 text-red-600" />
-                    <span className="text-sm font-medium text-red-800">Firebase Unavailable - Using Demo Mode</span>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -274,19 +265,6 @@ export const RestaurantLoginPage: React.FC = () => {
                   </Badge>
                 )}
               </div>
-                <p className="text-sm font-medium text-gray-700">Demo Mode</p>
-                {isFirebaseAvailable ? (
-                  <Badge variant="success" size="sm">
-                    <Wifi className="w-3 h-3 mr-1" />
-                    Firebase Connected
-                  </Badge>
-                ) : (
-                  <Badge variant="danger" size="sm">
-                    <WifiOff className="w-3 h-3 mr-1" />
-                    Firebase Offline
-                  </Badge>
-                )}
-              </div>
               <Button
                 onClick={isInDemoMode ? disableDemoMode : enableDemoMode}
                 variant={isInDemoMode ? "secondary" : "primary"}
@@ -326,9 +304,6 @@ export const RestaurantLoginPage: React.FC = () => {
                       <div className="text-sm text-gray-600">
                         {creds.email}
                         <span className="text-xs text-gray-400 ml-2">(Password: {creds.password})</span>
-                      <div className="text-sm text-gray-600">
-                        {creds.email}
-                        <span className="text-xs text-gray-400 ml-2">(Password: {creds.password})</span>
                       </div>
                     </div>
                     {isInDemoMode && (
@@ -344,9 +319,6 @@ export const RestaurantLoginPage: React.FC = () => {
           <div className="mt-6 pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-500">
               Powered by Urdhëro Platform
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {isFirebaseAvailable ? 'Connected to Firebase' : 'Offline Mode - Demo Only'}
             </p>
             <p className="text-xs text-gray-400 mt-1">
               {isFirebaseAvailable ? 'Connected to Firebase' : 'Offline Mode - Demo Only'}
