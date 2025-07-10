@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFirebase } from './useFirebase';
 import { MenuItem, Restaurant, Table } from '../types';
 import toast from 'react-hot-toast';
@@ -95,5 +95,138 @@ export const useMenu = (restaurantSlug: string, tableCode: string) => {
     categories,
     loading,
     error
+  };
+};
+
+/**
+ * Hook for managing menu items for a restaurant 
+ */
+export const useMenuManagement = (venueId: string) => {
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { getVenueMenuItems, createMenuItem, updateMenuItemAvailability } = useFirebase();
+  
+  // Load menu items
+  const loadMenuItems = useCallback(async () => {
+    try {
+      setLoading(true);
+      const items = await getVenueMenuItems(venueId);
+      setMenuItems(items);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(items.map(item => item.kategoria))];
+      setCategories(uniqueCategories);
+      
+      setError(null);
+    } catch (err: any) {
+      console.error('Error loading menu items:', err);
+      setError(err.message || 'Error loading menu items');
+      toast.error('Failed to load menu items');
+    } finally {
+      setLoading(false);
+    }
+  }, [venueId, getVenueMenuItems]);
+
+  // Initial load
+  useEffect(() => {
+    if (venueId) {
+      loadMenuItems();
+    }
+  }, [venueId, loadMenuItems]);
+  
+  // Create menu item
+  const addMenuItem = async (itemData: Partial<MenuItem>) => {
+    try {
+      const result = await createMenuItem(itemData);
+      
+      // Update local state
+      setMenuItems(prev => [...prev, result as MenuItem]);
+      
+      // Update categories if needed
+      if (itemData.kategoria && !categories.includes(itemData.kategoria)) {
+        setCategories(prev => [...prev, itemData.kategoria as string]);
+      }
+      
+      toast.success(`${itemData.emri} added to menu`);
+      return result;
+    } catch (err: any) {
+      console.error('Error creating menu item:', err);
+      toast.error(err.message || 'Failed to create menu item');
+      throw err;
+    }
+  };
+  
+  // Update menu item
+  const updateMenuItem = async (itemId: string, itemData: Partial<MenuItem>) => {
+    try {
+      // In a real implementation, this would call an API function
+      // For now, we'll simulate the update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update local state
+      setMenuItems(prev => prev.map(item => 
+        item.id === itemId ? { ...item, ...itemData, perditesuesNe: new Date() } : item
+      ));
+      
+      // Update categories if needed
+      if (itemData.kategoria && !categories.includes(itemData.kategoria)) {
+        setCategories(prev => [...prev, itemData.kategoria as string]);
+      }
+      
+      toast.success(`${itemData.emri || 'Item'} updated successfully`);
+    } catch (err: any) {
+      console.error('Error updating menu item:', err);
+      toast.error(err.message || 'Failed to update menu item');
+      throw err;
+    }
+  };
+  
+  // Delete menu item
+  const deleteMenuItem = async (itemId: string) => {
+    try {
+      // In a real implementation, this would call an API function
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Update local state
+      setMenuItems(prev => prev.filter(item => item.id !== itemId));
+      
+      toast.success('Item removed from menu');
+    } catch (err: any) {
+      console.error('Error deleting menu item:', err);
+      toast.error(err.message || 'Failed to delete menu item');
+      throw err;
+    }
+  };
+  
+  // Toggle item availability
+  const toggleItemAvailability = async (itemId: string, isAvailable: boolean) => {
+    try {
+      await updateMenuItemAvailability(itemId, isAvailable);
+      
+      // Update local state
+      setMenuItems(prev => prev.map(item => 
+        item.id === itemId ? { ...item, eshteIGatshem: isAvailable, perditesuesNe: new Date() } : item
+      ));
+      
+      toast.success(`Item is now ${isAvailable ? 'available' : 'unavailable'}`);
+    } catch (err: any) {
+      console.error('Error updating availability:', err);
+      toast.error(err.message || 'Failed to update availability');
+      throw err;
+    }
+  };
+
+  return {
+    menuItems,
+    categories,
+    loading,
+    error,
+    refresh: loadMenuItems,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    toggleItemAvailability
   };
 };

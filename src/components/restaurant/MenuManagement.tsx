@@ -2,87 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Filter, Edit, Trash2, Eye, AlertTriangle, Check, X, Coffee, Pizza, Utensils } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/Button'; 
 import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Toggle } from '../ui/Toggle';
 import { Modal } from '../ui/Modal';
 import { MenuItemForm } from './MenuItemForm';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { EmptyState } from '../ui/EmptyState';
+import { useMenuManagement } from '../../hooks/useMenu';
 import { MenuItem, MenuCategory } from '../../types';
 import toast from 'react-hot-toast';
-
-// Mock data for development
-const mockMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    emri: 'Aperol Spritz',
-    pershkrimi: 'Classic Italian aperitif with Aperol, Prosecco and soda, garnished with fresh orange',
-    cmimi: 850,
-    kategoria: MenuCategory.PIJE,
-    nenkategoria: 'Alcoholic',
-    imazhi: 'https://images.pexels.com/photos/5947043/pexels-photo-5947043.jpeg?auto=compress&cs=tinysrgb&w=400',
-    eshteIGatshem: true,
-    eshteVegetarian: true,
-    kohaPergatitjes: 5,
-    rradhaRenditjes: 1,
-    krijuarNe: new Date(),
-    perditesuesNe: new Date()
-  },
-  {
-    id: '2',
-    emri: 'Pizza Margherita',
-    pershkrimi: 'Classic pizza with fresh tomato sauce, buffalo mozzarella and fresh basil from our garden',
-    cmimi: 1200,
-    kategoria: MenuCategory.PIZZA,
-    imazhi: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
-    eshteIGatshem: true,
-    eshteVegetarian: true,
-    kohaPergatitjes: 15,
-    rradhaRenditjes: 1,
-    krijuarNe: new Date(),
-    perditesuesNe: new Date()
-  },
-  {
-    id: '3',
-    emri: 'Greek Salad',
-    pershkrimi: 'Traditional Greek salad with fresh tomatoes, cucumber, Kalamata olives and original feta cheese',
-    cmimi: 900,
-    kategoria: MenuCategory.SALLATAT,
-    imazhi: 'https://images.pexels.com/photos/1213710/pexels-photo-1213710.jpeg?auto=compress&cs=tinysrgb&w=400',
-    eshteIGatshem: true,
-    eshteVegetarian: true,
-    eshteVegan: false,
-    kohaPergatitjes: 8,
-    rradhaRenditjes: 1,
-    krijuarNe: new Date(),
-    perditesuesNe: new Date()
-  },
-  {
-    id: '4',
-    emri: 'Espresso Coffee',
-    pershkrimi: 'Perfect Italian coffee, prepared from selected beans roasted in-house',
-    cmimi: 200,
-    kategoria: MenuCategory.PIJE,
-    nenkategoria: 'Non-alcoholic',
-    imazhi: 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=400',
-    eshteIGatshem: true,
-    eshteVegan: true,
-    kohaPergatitjes: 3,
-    rradhaRenditjes: 2,
-    krijuarNe: new Date(),
-    perditesuesNe: new Date()
-  }
-];
 
 export interface MenuManagementProps {
   venueId?: string;
 }
 
 export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-venue' }) => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const { 
+    menuItems, 
+    categories,
+    loading, 
+    refresh,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    toggleItemAvailability
+  } = useMenuManagement(venueId);
+  
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
@@ -90,27 +39,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
-
-  // Load menu items
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      setLoading(true);
-      try {
-        // In a real app, this would be an API call to get menu items
-        // For now, we'll use mock data
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-        setMenuItems(mockMenuItems);
-        setFilteredItems(mockMenuItems);
-      } catch (error) {
-        console.error('Error fetching menu items:', error);
-        toast.error('Failed to load menu items');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMenuItems();
-  }, [venueId]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Filter menu items when filters change
   useEffect(() => {
@@ -140,23 +69,10 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
     setFilteredItems(filtered);
   }, [menuItems, searchTerm, categoryFilter, availabilityFilter]);
 
-  // Get unique categories from menu items
-  const categories = Array.from(new Set(menuItems.map(item => item.kategoria)));
-
   // Handle availability toggle
   const handleAvailabilityToggle = async (item: MenuItem, newAvailability: boolean) => {
     try {
-      // In a real app, this would be an API call to update item availability
-      await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
-      
-      // Update local state
-      setMenuItems(prev => prev.map(menuItem => 
-        menuItem.id === item.id 
-          ? { ...menuItem, eshteIGatshem: newAvailability } 
-          : menuItem
-      ));
-      
-      toast.success(`${item.emri} is now ${newAvailability ? 'available' : 'unavailable'}`);
+      await toggleItemAvailability(item.id, newAvailability);
     } catch (error) {
       console.error('Error updating item availability:', error);
       toast.error('Failed to update availability');
@@ -165,75 +81,36 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
 
   // Handle add/edit form submission
   const handleSaveMenuItem = async (itemData: Partial<MenuItem>, isEdit: boolean) => {
+    setIsProcessing(true);
     try {
-      // In a real app, this would be an API call to create/update a menu item
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-      
       if (isEdit && editingItem?.id) {
-        // Update existing item
-        const updatedItem = {
-          ...editingItem,
-          ...itemData,
-          perditesuesNe: new Date()
-        };
-        
-        // Update local state
-        setMenuItems(prev => prev.map(item => 
-          item.id === editingItem.id ? updatedItem : item
-        ));
-        
-        toast.success(`${itemData.emri} updated successfully`);
+        await updateMenuItem(editingItem.id, itemData);
       } else {
-        // Create new item
-        const newItem: MenuItem = {
-          id: `temp-${Date.now()}`, // In a real app, this would come from the backend
-          emri: itemData.emri || '',
-          pershkrimi: itemData.pershkrimi || '',
-          cmimi: itemData.cmimi || 0,
-          kategoria: itemData.kategoria || '',
-          nenkategoria: itemData.nenkategoria,
-          imazhi: itemData.imazhi,
-          eshteVegan: itemData.eshteVegan || false,
-          eshteVegetarian: itemData.eshteVegetarian || false,
-          eshteIGatshem: itemData.eshteIGatshem !== undefined ? itemData.eshteIGatshem : true,
-          kohaPergatitjes: itemData.kohaPergatitjes || 10,
-          rradhaRenditjes: itemData.rradhaRenditjes || 0,
-          krijuarNe: new Date(),
-          perditesuesNe: new Date()
-        };
-        
-        // Add to local state
-        setMenuItems(prev => [...prev, newItem]);
-        
-        toast.success(`${itemData.emri} added to menu`);
+        await addMenuItem(itemData);
       }
-      
-      // Close modal
-      setShowAddModal(false);
-      setEditingItem(null);
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error('Failed to save menu item');
+    } finally {
+      setIsProcessing(false);
+      setShowAddModal(false);
+      setEditingItem(null);
     }
   };
 
   // Handle delete
   const handleDeleteItem = async () => {
     if (!itemToDelete?.id) return;
-    
+    setIsProcessing(true);
     try {
-      // In a real app, this would be an API call to delete a menu item
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-      
-      // Remove from local state
-      setMenuItems(prev => prev.filter(item => item.id !== itemToDelete.id));
-      
-      toast.success(`${itemToDelete.emri} removed from menu`);
-      setShowDeleteModal(false);
-      setItemToDelete(null);
+      await deleteMenuItem(itemToDelete.id);
     } catch (error) {
       console.error('Error deleting menu item:', error);
       toast.error('Failed to delete menu item');
+    } finally {
+      setIsProcessing(false);
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     }
   };
 
@@ -254,9 +131,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
 
   if (loading) {
     return (
-      <div className="p-4 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading menu items...</p>
+      <div className="p-8 text-center">
+        <LoadingSpinner size="lg" text="Loading menu items..." />
       </div>
     );
   }
@@ -328,6 +204,18 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
             placeholder="Availability"
           />
         </div>
+        
+        <div className="w-full md:w-48">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            className="w-full"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Menu Items List */}
@@ -367,23 +255,23 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
         </Card>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <table className="min-w-full divide-y divide-gray-200 table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40%]">
                     Item
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                     Actions
                   </th>
                 </tr>
@@ -476,7 +364,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
         <div className="p-6">
           <MenuItemForm
             existingItem={editingItem}
-            onSave={handleSaveMenuItem}
+            onSave={(data, isEdit) => handleSaveMenuItem(data, isEdit)}
             onCancel={() => {
               setShowAddModal(false);
               setEditingItem(null);
@@ -502,18 +390,20 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
             This action cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">
-            <Button
+            <Button 
               variant="outline"
               onClick={() => {
                 setShowDeleteModal(false);
                 setItemToDelete(null);
               }}
+              disabled={isProcessing}
             >
               Cancel
             </Button>
             <Button
               variant="danger"
               onClick={handleDeleteItem}
+              loading={isProcessing}
             >
               Delete Item
             </Button>
@@ -523,3 +413,6 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({ venueId = 'demo-
     </div>
   );
 };
+
+// Lucide icons not imported above
+import { RefreshCw } from 'lucide-react';

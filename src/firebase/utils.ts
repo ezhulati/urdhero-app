@@ -1,6 +1,19 @@
 import { httpsCallable } from 'firebase/functions';
 import { auth, db, functions } from './config';
-import { doc, getDoc, DocumentReference, DocumentData } from 'firebase/firestore';
+import { 
+  doc, 
+  getDoc, 
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  DocumentReference, 
+  DocumentData,
+  CollectionReference
+} from 'firebase/firestore';
 
 /**
  * Check if Firebase connection is available with proper error handling
@@ -97,4 +110,14 @@ export async function safeGetDoc<T = DocumentData>(
 }
 
 // Re-export Firebase utilities for easier access
-export { doc, getDoc };
+export { 
+  doc, 
+  getDoc, 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  getDocs,
+  query,
+  where
+};

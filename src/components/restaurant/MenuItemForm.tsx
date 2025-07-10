@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Coffee, Utensils, Leaf, Image } from 'lucide-react';
+import { Upload, Coffee, Utensils, Leaf, Image, X, AlertCircle } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
@@ -13,6 +13,7 @@ interface MenuItemFormProps {
   onSave: (itemData: Partial<MenuItem>, isEdit: boolean) => Promise<void>;
   onCancel: () => void;
   categories: string[];
+  className?: string;
 }
 
 export const MenuItemForm: React.FC<MenuItemFormProps> = ({
@@ -20,6 +21,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
   onSave,
   onCancel,
   categories,
+  className = '',
 }) => {
   const [formData, setFormData] = useState<Partial<MenuItem>>({
     emri: '',
@@ -37,6 +39,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize form with existing item data if editing
   useEffect(() => {
@@ -140,7 +143,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
     : Object.values(MenuCategory);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
           {/* Basic Information */}
@@ -266,7 +269,12 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           <Card className="p-4">
             <div className="flex flex-col items-center justify-center space-y-4">
               {imagePreview ? (
-                <div className="relative">
+                <motion.div 
+                  className="relative" 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <img
                     src={imagePreview}
                     alt="Item preview"
@@ -274,7 +282,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                   />
                   <button
                     type="button"
-                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
+                    className="absolute top-2 right-2 p-1 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors"
                     onClick={() => {
                       setImagePreview(null);
                       setFormData(prev => ({ ...prev, imazhi: '' }));
@@ -282,11 +290,11 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                   >
                     <X className="w-4 h-4 text-gray-600" />
                   </button>
-                </div>
+                </motion.div>
               ) : (
                 <div className="w-full h-64 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 p-4">
                   <Image className="w-12 h-12 mb-3 text-gray-400" />
-                  <p className="text-sm font-medium">Drag and drop an image here, or click to browse</p>
+                  <p className="text-sm font-medium">Drag and drop an image, or click to browse</p>
                   <p className="text-xs text-gray-400 mt-1">PNG, JPG, or WEBP up to 5MB</p>
                 </div>
               )}
@@ -295,22 +303,21 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                 type="file"
                 id="image-upload"
                 className="hidden"
+              ref={fileInputRef}
                 accept="image/*"
                 onChange={handleImageChange}
               />
               
-              <label htmlFor="image-upload">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-2"
-                  icon={<Upload className="w-4 h-4" />}
-                  iconPosition="left"
-                  as="span"
-                >
-                  {imagePreview ? 'Change Image' : 'Upload Image'}
-                </Button>
-              </label>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-2"
+              icon={<Upload className="w-4 h-4" />}
+              iconPosition="left"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {imagePreview ? 'Change Image' : 'Upload Image'}
+            </Button>
               
               <div className="text-xs text-gray-500 mt-2 text-center">
                 A clear, high-quality image will help sell your menu item
@@ -321,7 +328,7 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           {/* Image URL input (alternative to file upload) */}
           <div className="mt-4">
             <Input
-              label="Or Enter Image URL"
+              label="Or Enter Image URL (Pexels or other secure source)"
               name="imazhi"
               value={formData.imazhi || ''}
               onChange={(e) => {
@@ -332,8 +339,15 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
                   setImagePreview(null);
                 }
               }}
+              leftIcon={<Image className="w-4 h-4" />}
               placeholder="https://example.com/image.jpg"
             />
+            {formData.imazhi && !imagePreview && (
+              <div className="mt-2 flex items-center text-orange-700 text-sm">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Could not load preview. Check if the URL is valid and accessible.
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -345,12 +359,15 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
           variant="outline"
           onClick={onCancel}
           disabled={isSubmitting}
+          size="lg"
         >
           Cancel
         </Button>
         <Button
           type="submit"
           loading={isSubmitting}
+          size="lg"
+          className="bg-gradient-to-r from-blue-600 to-blue-700"
         >
           {existingItem ? 'Update Item' : 'Add to Menu'}
         </Button>
@@ -358,3 +375,6 @@ export const MenuItemForm: React.FC<MenuItemFormProps> = ({
     </form>
   );
 };
+
+// Add motion import
+import { motion } from 'framer-motion';

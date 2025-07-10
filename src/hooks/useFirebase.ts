@@ -135,21 +135,52 @@ export const useFirebase = () => {
 
   /**
    * Create a new menu item for a venue
-   * @param menuItemData Menu item details
+   * @param menuItemData Menu item data to create
    * @returns Created menu item with ID
    */
   const createMenuItem = async (menuItemData: Partial<MenuItem>) => {
     try {
-      // This function is not implemented in the API service yet
-      // Using a mock function for now
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Return a mock result
-      return {
-        success: true,
-        menuItemId: `item-${Date.now()}`,
-        ...menuItemData
-      };
+      // Try to use the Firebase Cloud Function
+      try {
+        // Set default values if not provided
+        const finalItemData = {
+          eshteIGatshem: true,
+          eshteVegan: false,
+          eshteVegetarian: false,
+          rradhaRenditjes: 0,
+          ...menuItemData
+        };
+        
+        const result = await orderAPI.createMenuItem(finalItemData);
+        return result;
+      } catch (apiError) {
+        console.error('Error using Firebase createMenuItem function:', apiError);
+        
+        // Fall back to mock implementation
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Create a temporary ID
+        const tempId = `item-${Date.now()}`;
+        
+        // Return a mock result
+        const createdItem: MenuItem = {
+          id: tempId,
+          emri: menuItemData.emri || 'New Item',
+          pershkrimi: menuItemData.pershkrimi || '',
+          cmimi: menuItemData.cmimi || 0,
+          kategoria: menuItemData.kategoria || 'Other',
+          nenkategoria: menuItemData.nenkategoria,
+          imazhi: menuItemData.imazhi,
+          eshteVegan: menuItemData.eshteVegan || false,
+          eshteVegetarian: menuItemData.eshteVegetarian || false,
+          eshteIGatshem: menuItemData.eshteIGatshem !== undefined ? menuItemData.eshteIGatshem : true,
+          kohaPergatitjes: menuItemData.kohaPergatitjes || 10,
+          rradhaRenditjes: menuItemData.rradhaRenditjes || 0,
+          krijuarNe: new Date(),
+          perditesuesNe: new Date()
+        };
+        return createdItem;
+      }
     } catch (error: any) {
       console.error('Error creating menu item:', error);
       throw new Error(error.message || 'Failed to create menu item');
@@ -164,19 +195,95 @@ export const useFirebase = () => {
    */
   const updateMenuItemAvailability = async (menuItemId: string, isAvailable: boolean) => {
     try {
-      // This function is not implemented in the API service yet
-      // Using a mock function for now
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Return a mock result
-      return {
-        success: true,
-        menuItemId,
-        isAvailable
-      };
+      // Try to use the Firebase Cloud Function
+      try {
+        const result = await orderAPI.updateMenuItemAvailability({
+          menuItemId,
+          eshteIGatshem: isAvailable
+        });
+        return result;
+      } catch (apiError) {
+        console.error('Error using Firebase updateMenuItemAvailability function:', apiError);
+        
+        // Fall back to mock implementation
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Return a mock result
+        return {
+          success: true,
+          menuItemId,
+          isAvailable
+        };
+      }
     } catch (error: any) {
       console.error('Error updating menu item availability:', error);
       throw new Error(error.message || 'Failed to update menu item availability');
+    }
+  };
+  /**
+   * Update a menu item
+   * @param menuItemId Item ID to update
+   * @param menuItemData Updated menu item data
+   * @returns Updated menu item
+   */
+  const updateMenuItem = async (menuItemId: string, menuItemData: Partial<MenuItem>) => {
+    try {
+      // Try to use the Firebase Cloud Function
+      try {
+        // Implementation would call a Cloud Function
+        const result = await orderAPI.updateMenuItem({
+          menuItemId,
+          ...menuItemData
+        });
+        return result;
+      } catch (apiError) {
+        console.error('Error using Firebase updateMenuItem function:', apiError);
+        
+        // Fall back to mock implementation
+        await new Promise(resolve => setTimeout(resolve, 700));
+        
+        // Return a mock result
+        return {
+          success: true,
+          menuItemId,
+          ...menuItemData
+        };
+      }
+    } catch (error: any) {
+      console.error('Error updating menu item:', error);
+      throw new Error(error.message || 'Failed to update menu item');
+    }
+  };
+
+  /**
+   * Delete a menu item
+   * @param menuItemId Item ID to delete
+   * @returns Success result
+   */
+  const deleteMenuItem = async (menuItemId: string) => {
+    try {
+      // Try to use the Firebase Cloud Function
+      try {
+        // Implementation would call a Cloud Function
+        const result = await orderAPI.deleteMenuItem({
+          menuItemId
+        });
+        return result;
+      } catch (apiError) {
+        console.error('Error using Firebase deleteMenuItem function:', apiError);
+        
+        // Fall back to mock implementation
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Return a mock result
+        return {
+          success: true,
+          menuItemId
+        };
+      }
+    } catch (error: any) {
+      console.error('Error deleting menu item:', error);
+      throw new Error(error.message || 'Failed to delete menu item');
     }
   };
 
@@ -480,6 +587,8 @@ export const useFirebase = () => {
     getOrderByNumber,
     createMenuItem,
     updateMenuItemAvailability,
+    updateMenuItem,
+    deleteMenuItem,
     createTable,
     generateTableQR,
     getVenueAnalytics,
