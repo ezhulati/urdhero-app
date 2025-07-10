@@ -1,6 +1,7 @@
 import { httpsCallable, HttpsCallableResult } from 'firebase/functions';
 import { collection, doc, getDoc, getDocs, query, where, onSnapshot, DocumentData, DocumentReference } from 'firebase/firestore';
-import { functions, db, checkFirebaseConnection, createCallableWithFallback } from '../lib/firebase';
+import { functions, db } from '../firebase/config';
+import { checkFirebaseConnection, createCallableWithFallback } from '../firebase/utils';
 
 /**
  * Firebase API integration layer

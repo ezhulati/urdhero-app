@@ -5,7 +5,8 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth, db, checkFirebaseConnection } from '../lib/firebase';
+import { auth, db } from '../firebase/config';
+import { checkFirebaseConnection } from '../firebase/utils';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 

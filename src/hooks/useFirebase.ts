@@ -1,4 +1,4 @@
-import { checkFirebaseConnection } from '../lib/firebase';
+import { checkFirebaseConnection } from '../firebase/utils';
 import { Restaurant, MenuItem, Table, Order, OrderStatus } from '../types';
 import { useState, useEffect } from 'react';
 import { venueAPI, orderAPI, firestoreListeners, testFirebaseAPIs, getMockOrderUpdate } from '../services/firebase-api';
