@@ -1,7 +1,21 @@
 import { httpsCallable, HttpsCallableResult } from 'firebase/functions';
-import { collection, doc, getDoc, getDocs, query, where, onSnapshot, DocumentData, DocumentReference } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  DocumentData, 
+  DocumentReference,
+  QuerySnapshot
+} from 'firebase/firestore';
 import { functions, db } from '../firebase/config';
-import { checkFirebaseConnection, createCallableWithFallback } from '../firebase/utils';
+import { 
+  checkFirebaseConnection, 
+  createCallableWithFallback,
+  doc,
+  getDoc,
+  safeGetDoc
+} from '../firebase/utils';
 
 /**
  * Firebase API integration layer
@@ -12,7 +26,11 @@ import { checkFirebaseConnection, createCallableWithFallback } from '../firebase
 
 // Venue-related API calls
 export const venueAPI = {
-  // Validate a table in a venue using QR code details
+  /**
+   * Validate a table in a venue using QR code details
+   * @param data Object containing venueSlug and tableCode
+   * @returns Validation result with venue and table information
+   */
   validateTable: createCallableWithFallback<
     { venueSlug: string; tableCode: string },
     any
@@ -46,7 +64,11 @@ export const venueAPI = {
     }
   ),
   
-  // Get venue menu with categories and items
+  /**
+   * Get venue menu with categories and items
+   * @param data Object containing venueSlug and tableCode
+   * @returns Menu data including venue, table, and categories with items
+   */
   getMenu: createCallableWithFallback<
     { venueSlug: string; tableCode: string },
     any
@@ -135,7 +157,11 @@ export const venueAPI = {
     }
   ),
   
-  // Get venue categories
+  /**
+   * Get venue categories
+   * @param data Object containing venueId
+   * @returns List of categories for the venue
+   */
   getVenueCategories: createCallableWithFallback<
     { venueId: string },
     any
@@ -159,7 +185,11 @@ export const venueAPI = {
 
 // Order-related API calls
 export const orderAPI = {
-  // Create a new order
+  /**
+   * Create a new order
+   * @param orderData Order data including items, venue, table, etc.
+   * @returns Order creation result with order number and tracking information
+   */
   createOrder: createCallableWithFallback<any, any>(
     'createOrder',
     async (orderData) => {
@@ -181,7 +211,11 @@ export const orderAPI = {
     }
   ),
 
-  // Get order status (for tracking)
+  /**
+   * Get order status for tracking
+   * @param data Object containing orderNumber
+   * @returns Order details including status, items, and timestamps
+   */
   getOrderStatus: createCallableWithFallback<
     { orderNumber: string },
     any
@@ -233,7 +267,11 @@ export const orderAPI = {
     }
   ),
 
-  // Update order status (for restaurant staff)
+  /**
+   * Update order status (for restaurant staff)
+   * @param data Object with orderNumber, status, and optional cancellationReason
+   * @returns Status update result
+   */
   updateOrderStatus: createCallableWithFallback<
     { orderNumber: string; status: string; cancellationReason?: string },
     any
@@ -253,8 +291,13 @@ export const orderAPI = {
 
 // Firestore direct listeners (for real-time updates)
 export const firestoreListeners = {
-  // Listen to order changes in real-time
-  subscribeToOrder: (orderNumber: string, callback: (order: any) => void) => {
+  /**
+   * Subscribe to real-time order updates
+   * @param orderNumber The order number to track
+   * @param callback Function to call with updated order data
+   * @returns Unsubscribe function
+   */
+  subscribeToOrder: (orderNumber: string, callback: (order: DocumentData) => void) => {
     // First check if Firebase is available
     checkFirebaseConnection().then(isAvailable => {
       if (isAvailable) {
@@ -298,30 +341,69 @@ export const firestoreListeners = {
     return () => {};
   },
   
-  // Listen to menu changes for a venue in real-time
-  subscribeToVenueMenu: (venueId: string, callback: (items: any[]) => void) => {
+  /**
+   * Subscribe to real-time menu updates for a venue
+   * @param venueId The venue ID
+   * @param callback Function to call with updated menu data
+   * @returns Unsubscribe function
+   */
+  subscribeToVenueMenu: (venueId: string, callback: (items: DocumentData[]) => void) => {
     try {
       const menuItemsRef = collection(db, 'venues', venueId, 'menuItems');
       
-      return onSnapshot(menuItemsRef, (snapshot) => {
+      return onSnapshot(menuItemsRef, (snapshot: QuerySnapshot) => {
         const items = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         callback(items);
-      }, (error) => {
+      }, (error: Error) => {
         console.error('Error listening to menu updates:', error);
         // Don't call callback on error
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error setting up menu listener:', error);
       return () => {}; // Return empty unsubscribe function
     }
   }
 };
 
+/**
+ * Subscribe to venue orders in real-time for dashboard
+ * @param venueId The venue ID
+ * @param callback Function to call with updated orders data
+ * @returns Unsubscribe function
+ */
+export const subscribeToVenueOrders = (
+  venueId: string, 
+  callback: (orders: DocumentData[]) => void
+): (() => void) => {
+  try {
+    const ordersRef = collection(db, 'orders');
+    const q = query(ordersRef, where('venueId', '==', venueId));
+    
+    return onSnapshot(q, (snapshot: QuerySnapshot) => {
+      const orders = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      callback(orders);
+    }, (error: Error) => {
+      console.error('Error listening to venue orders:', error);
+      // Provide empty data on error
+      callback([]);
+    });
+  } catch (error) {
+    console.error('Error setting up venue orders listener:', error);
+    return () => {}; // Return empty unsubscribe function
+  }
+};
+
 // Helper function to simulate order updates for demo mode
-export const simulateOrderUpdates = (orderNumber: string, callback: (order: any) => void): number => {
+export const simulateOrderUpdates = (
+  orderNumber: string, 
+  callback: (order: DocumentData) => void
+): number => {
   // Create initial mock order
   const mockOrder = getMockOrderUpdate(orderNumber);
   callback(mockOrder);
@@ -347,7 +429,7 @@ export const simulateOrderUpdates = (orderNumber: string, callback: (order: any)
 };
 
 // Helper to create mock order data
-export const getMockOrderUpdate = (orderNumber: string) => {
+export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
   // Parse order time from the order number if possible
   let orderTime;
   if (orderNumber.includes('-')) {
@@ -389,7 +471,7 @@ export const getMockOrderUpdate = (orderNumber: string) => {
 };
 
 // Test function to verify Firebase connectivity
-export const testFirebaseAPIs = async () => {
+export const testFirebaseAPIs = async (): Promise<boolean> => {
   try {
     const isConnected = await checkFirebaseConnection();
     if (!isConnected) {

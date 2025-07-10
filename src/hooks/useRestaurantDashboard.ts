@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFirebase } from './useFirebase';
 import { Order, OrderStatus } from '../types';
 import toast from 'react-hot-toast';
+import { DocumentData } from 'firebase/firestore';
 
 export const useRestaurantDashboard = (venueId: string) => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -13,7 +14,11 @@ export const useRestaurantDashboard = (venueId: string) => {
     avgTime: 0
   });
 
-  const { subscribeToVenueOrders, updateOrderStatus, getVenueAnalytics } = useFirebase();
+  const { 
+    subscribeToVenueOrders, 
+    updateOrderStatus, 
+    getVenueAnalytics 
+  } = useFirebase();
 
   useEffect(() => {
     if (!venueId) return;
@@ -21,7 +26,7 @@ export const useRestaurantDashboard = (venueId: string) => {
     setLoading(true);
     
     // Subscribe to real-time updates for venue orders
-    const unsubscribe = subscribeToVenueOrders(venueId, (ordersData) => {
+    const unsubscribe = subscribeToVenueOrders(venueId, (ordersData: DocumentData[]) => {
       setOrders(ordersData);
       
       // Calculate dashboard stats

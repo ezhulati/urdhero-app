@@ -1,16 +1,27 @@
 import { checkFirebaseConnection } from '../firebase/utils';
 import { Restaurant, MenuItem, Table, Order, OrderStatus } from '../types';
 import { useState, useEffect } from 'react';
-import { venueAPI, orderAPI, firestoreListeners, testFirebaseAPIs, getMockOrderUpdate } from '../services/firebase-api';
-import { Restaurant, MenuItem, Table } from '../types';
+import { 
+  venueAPI, 
+  orderAPI, 
+  firestoreListeners, 
+  testFirebaseAPIs, 
+  getMockOrderUpdate, 
+  subscribeToVenueOrders 
+} from '../services/firebase-api';
 import toast from 'react-hot-toast';
 
-// Hook that wraps Firebase services with better error handling and state management
 /**
  * Hook to interact with Firebase backend
+ * @returns Object containing Firebase service functions
  */
 export const useFirebase = () => {
   // Cloud Functions wrappers
+  /**
+   * Create a new order
+   * @param orderData Order details including items, venue, table, etc.
+   * @returns Order creation result with tracking information
+   */
   const createOrder = async (orderData: any) => {
     try {
       // Try to use Firebase API first
@@ -47,6 +58,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Update the status of an existing order
+   * @param data Object containing orderId, status, and optional cancellationReason
+   * @returns Status update result
+   */
   const updateOrderStatus = async (data: { orderId: string; status: string; cancellationReason?: string }) => {
     try {
       let result;
@@ -81,6 +97,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get order details by order number
+   * @param orderNumber The unique order number
+   * @returns Order details with status and tracking information
+   */
   const getOrderByNumber = async (orderNumber: string) => {
     try {
       let result;
@@ -112,6 +133,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Create a new menu item for a venue
+   * @param menuItemData Menu item details
+   * @returns Created menu item with ID
+   */
   const createMenuItem = async (menuItemData: Partial<MenuItem>) => {
     try {
       // This function is not implemented in the API service yet
@@ -130,6 +156,12 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Update menu item availability
+   * @param menuItemId Item ID to update
+   * @param isAvailable New availability status
+   * @returns Update result
+   */
   const updateMenuItemAvailability = async (menuItemId: string, isAvailable: boolean) => {
     try {
       // This function is not implemented in the API service yet
@@ -148,6 +180,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Create a new table for a venue
+   * @param tableData Table details
+   * @returns Created table with ID
+   */
   const createTable = async (tableData: any) => {
     try {
       // This function is not implemented in the API service yet
@@ -166,6 +203,12 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Generate a QR code for a table
+   * @param tableId Table ID
+   * @param size Optional size in pixels
+   * @returns QR code URLs and table information
+   */
   const generateTableQR = async (tableId: string, size?: number) => {
     try {
       // This function is not implemented in the API service yet
@@ -186,6 +229,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get analytics data for a venue
+   * @param timeRange Time period for the analytics
+   * @returns Analytics data including revenue, orders, and customers
+   */
   const getVenueAnalytics = async (timeRange: 'today' | 'week' | 'month' | 'year' = 'month') => {
     try {
       // This function is not implemented in the API service yet
@@ -217,6 +265,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get venue information by slug
+   * @param slug The venue's URL slug
+   * @returns Venue information or null if not found
+   */
   // Mock data function for development
   const getVenueBySlug = async (slug: string): Promise<Restaurant | null> => {
     try {
@@ -246,6 +299,12 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get table information by ID and venue
+   * @param venueId The venue ID
+   * @param tableCode The table code
+   * @returns Table information or null if not found
+   */
   const getTable = async (venueId: string, tableCode: string): Promise<Table | null> => {
     try {
       // Simulating API delay
@@ -286,6 +345,12 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get table by code
+   * @param venueId The venue ID
+   * @param code The table code
+   * @returns Table information or null if not found
+   */
   const getTableByCode = async (venueId: string, code: string): Promise<Table | null> => {
     try {
       // Reuse the getTable function as they're effectively the same in our mock implementation
@@ -296,6 +361,11 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Get menu items for a venue
+   * @param venueId The venue ID
+   * @returns Array of menu items
+   */
   const getVenueMenuItems = async (venueId: string): Promise<MenuItem[]> => {
     try {
       // Simulating API delay
@@ -340,6 +410,12 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Subscribe to real-time order updates
+   * @param orderId Order ID to track
+   * @param callback Function called with updated order data
+   * @returns Unsubscribe function
+   */
   const subscribeToOrder = (orderId: string, callback: (order: any) => void) => {
     try {
       // Try to use Firestore listener
@@ -372,7 +448,21 @@ export const useFirebase = () => {
     }
   };
 
+  /**
+   * Subscribe to venue orders
+   * @param venueId Venue ID
+   * @param callback Function called with updated orders
+   * @returns Unsubscribe function
+   */
+  const subscribeToVenueOrders = (venueId: string, callback: (orders: any[]) => void) => {
+    return subscribeToVenueOrders(venueId, callback);
+  };
+
   // Test Firebase connectivity
+  /**
+   * Test Firebase connectivity
+   * @returns True if connection is successful
+   */
   const testFirebaseConnection = async () => {
     const isConnected = await testFirebaseAPIs();
     if (isConnected) {
@@ -400,6 +490,7 @@ export const useFirebase = () => {
     getTableByCode,
     getVenueMenuItems, 
     subscribeToOrder, 
+    subscribeToVenueOrders,
     testFirebaseConnection,
     isFirebaseAvailable: async () => {
       try {

@@ -1,14 +1,23 @@
 import { httpsCallable } from 'firebase/functions';
 import { auth, db, functions } from './config';
+import { doc, getDoc, DocumentReference, DocumentData } from 'firebase/firestore';
 
 /**
- * Check if Firebase connection is available
+ * Check if Firebase connection is available with proper error handling
+ * @returns Promise<boolean> True if connection is successful
  */
 export const checkFirebaseConnection = async (): Promise<boolean> => {
   try {
-    // Try to access Firestore as a connectivity check
+    // Use a lightweight query to test Firebase connectivity
     const testDocRef = doc(db, '_connection_test', 'test');
-    await getDoc(testDocRef);
+    
+    // Set a timeout to avoid hanging if Firebase is unavailable
+    const timeoutPromise = new Promise<boolean>((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase connection timeout')), 5000);
+    });
+    
+    // Race between the Firestore query and the timeout
+    await Promise.race([getDoc(testDocRef), timeoutPromise]);
     return true;
   } catch (error) {
     console.warn('Firebase connection check failed:', error);
@@ -21,6 +30,7 @@ export const checkFirebaseConnection = async (): Promise<boolean> => {
  * 
  * @param functionName The name of the Firebase Cloud Function
  * @param fallbackFn A fallback implementation for when Firebase is unavailable
+ * @returns A function that will try Firebase first, then fall back to the local implementation
  */
 export function createCallableWithFallback<TData, TResult>(
   functionName: string,
@@ -37,17 +47,54 @@ export function createCallableWithFallback<TData, TResult>(
 
       // Try to call the Firebase function
       const callable = httpsCallable<TData, TResult>(functions, functionName);
-      const result = await callable(data);
+      
+      // Add timeout for Firebase function calls
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error(`Firebase function ${functionName} timeout`)), 10000);
+      });
+      
+      const result = await Promise.race([
+        callable(data),
+        timeoutPromise
+      ]);
+      
       return result.data;
     } catch (error) {
-      console.error(`Error calling Firebase function ${functionName}:`, error);
-      // Fall back to mock implementation
-      console.log(`Falling back to mock implementation for ${functionName}`);
+      // Log the error with context
+      console.error(`Error calling Firebase function ${functionName}:`, {
+        error,
+        functionName,
+        dataPreview: JSON.stringify(data).substring(0, 100) + '...'
+      });
+      
+      // Fall back to local implementation
+      console.log(`Falling back to local implementation for ${functionName}`);
       return fallbackFn(data);
     }
   };
 }
 
-// Make sure doc and getDoc are imported and exported for use in other files
-import { doc, getDoc } from 'firebase/firestore';
+/**
+ * Helper to safely get a document from Firestore with proper error handling
+ * @param docRef The document reference to fetch
+ * @param fallback Optional fallback data to use if fetching fails
+ * @returns The document data or fallback if unavailable
+ */
+export async function safeGetDoc<T = DocumentData>(
+  docRef: DocumentReference,
+  fallback?: T
+): Promise<T | null> {
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as T;
+    }
+    return fallback || null;
+  } catch (error) {
+    console.error('Error fetching document:', error);
+    return fallback || null;
+  }
+}
+
+// Re-export Firebase utilities for easier access
 export { doc, getDoc };
