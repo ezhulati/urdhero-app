@@ -286,6 +286,100 @@ export const orderAPI = {
         message: 'Order status updated successfully'
       };
     }
+  ),
+  
+  /**
+   * Create a new menu item
+   * @param menuItemData Menu item data
+   * @returns Created menu item
+   */
+  createMenuItem: createCallableWithFallback<
+    Partial<MenuItem>,
+    MenuItem
+  >(
+    'createMenuItem',
+    async (menuItemData) => {
+      console.log('Using mock menu item creation with data:', menuItemData);
+      
+      // Create mock menu item
+      return {
+        id: `item-${Date.now()}`,
+        emri: menuItemData.emri || 'New Item',
+        pershkrimi: menuItemData.pershkrimi || '',
+        cmimi: menuItemData.cmimi || 0,
+        kategoria: menuItemData.kategoria || 'Other',
+        nenkategoria: menuItemData.nenkategoria,
+        imazhi: menuItemData.imazhi,
+        eshteVegan: menuItemData.eshteVegan || false,
+        eshteVegetarian: menuItemData.eshteVegetarian || false,
+        eshteIGatshem: menuItemData.eshteIGatshem !== undefined ? menuItemData.eshteIGatshem : true,
+        kohaPergatitjes: menuItemData.kohaPergatitjes || 10,
+        rradhaRenditjes: menuItemData.rradhaRenditjes || 0,
+        krijuarNe: new Date(),
+        perditesuesNe: new Date()
+      };
+    }
+  ),
+  
+  /**
+   * Update menu item availability
+   * @param data Object with menuItemId and availability status
+   * @returns Update result
+   */
+  updateMenuItemAvailability: createCallableWithFallback<
+    { menuItemId: string; eshteIGatshem: boolean },
+    { success: boolean; menuItemId: string; isAvailable: boolean }
+  >(
+    'updateMenuItemAvailability',
+    async (data) => {
+      console.log('Using mock menu item availability update with data:', data);
+      
+      return {
+        success: true,
+        menuItemId: data.menuItemId,
+        isAvailable: data.eshteIGatshem
+      };
+    }
+  ),
+  
+  /**
+   * Update a menu item
+   * @param data Menu item data to update
+   * @returns Update result
+   */
+  updateMenuItem: createCallableWithFallback<
+    Partial<MenuItem> & { menuItemId: string },
+    { success: boolean; menuItemId: string }
+  >(
+    'updateMenuItem',
+    async (data) => {
+      console.log('Using mock menu item update with data:', data);
+      
+      return {
+        success: true,
+        menuItemId: data.menuItemId
+      };
+    }
+  ),
+  
+  /**
+   * Delete a menu item
+   * @param data Object with menuItemId to delete
+   * @returns Delete result
+   */
+  deleteMenuItem: createCallableWithFallback<
+    { menuItemId: string },
+    { success: boolean; menuItemId: string }
+  >(
+    'deleteMenuItem',
+    async (data) => {
+      console.log('Using mock menu item deletion with data:', data);
+      
+      return {
+        success: true,
+        menuItemId: data.menuItemId
+      };
+    }
   )
 };
 

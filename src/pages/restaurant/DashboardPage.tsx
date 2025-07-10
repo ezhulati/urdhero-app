@@ -4,7 +4,7 @@ import { Bell, Clock, CheckCircle, XCircle, TrendingUp, Users, LogOut, Settings,
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
+import { Badge } from '../../components/ui/Badge'; 
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PaymentSettings } from '../../components/restaurant/PaymentSettings';
@@ -27,7 +27,7 @@ export const RestaurantDashboardPage: React.FC = () => {
 
   const { 
     orders, 
-    filteredOrders, 
+    filteredOrders,
     loading, 
     stats, 
     filter, 
@@ -259,7 +259,7 @@ export const RestaurantDashboardPage: React.FC = () => {
         </div>
 
         {activeTab === 'menu' ? (
-          <MenuManagement venueId={restaurant?.id} />
+          <MenuManagement venueId={venueId} />
         ) : activeTab === 'inventory' ? (
           <InventoryDashboard />
         ) : activeTab === 'analytics' ? (
