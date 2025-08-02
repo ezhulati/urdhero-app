@@ -32,8 +32,6 @@ export const useOrderTracking = (orderNumber: string) => {
           setLoading(false);
           return;
         }
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order details';
-        setError(errorMessage);
         
         // Set initial order state
         setOrder(orderDetails);
