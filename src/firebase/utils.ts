@@ -20,6 +20,11 @@ import {
  * @returns Promise<boolean> True if connection is successful
  */
 export const checkFirebaseConnection = async (): Promise<boolean> => {
+  // Check if we're in demo mode and skip Firebase connection attempts
+  if (import.meta.env.VITE_DEMO_MODE === 'true') {
+    return false;
+  }
+  
   try {
     // Use a lightweight query to test Firebase connectivity
     const testDocRef = doc(db, '_connection_test', 'test');
