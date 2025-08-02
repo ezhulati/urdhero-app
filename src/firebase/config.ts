@@ -25,19 +25,24 @@ export const storage = getStorage(app);
 
 // Configure Firebase for offline mode when emulators are not available
 if (import.meta.env.DEV) {
-  try {
-    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectFunctionsEmulator(functions, 'localhost', 5001);
-    connectStorageEmulator(storage, 'localhost', 9199);
-    console.log('Connected to Firebase emulators');
-  } catch (error) {
-    console.log('Firebase emulators not running, disabling network access');
-    // Disable network access to prevent connection attempts
-    enableNetwork(db, false).catch(() => {
-      console.log('Network already disabled or error disabling network');
-    });
-  }
+  (async () => {
+    try {
+      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      connectFirestoreEmulator(db, 'localhost', 8080);
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+      connectStorageEmulator(storage, 'localhost', 9199);
+      console.log('Connected to Firebase emulators');
+    } catch (error) {
+      console.log('Firebase emulators not running, disabling network access');
+      // Disable network access to prevent connection attempts
+      try {
+        await enableNetwork(db, false);
+        console.log('Firestore network access disabled');
+      } catch (networkError) {
+        console.log('Network already disabled or error disabling network');
+      }
+    }
+  })();
 } else {
   console.log('Running in production mode');
 }
