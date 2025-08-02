@@ -31,6 +31,7 @@ export const useOrderTracking = (orderNumber: string) => {
           setError('Order not found');
           setLoading(false);
           return;
+        }
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order details';
         setError(errorMessage);
         
