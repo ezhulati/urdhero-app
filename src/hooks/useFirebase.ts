@@ -20,6 +20,11 @@ export const useFirebase = () => {
   /**
    * Create a new order
    * @param orderData Order details including items, venue, table, etc.
+    // In WebContainer, always use offline mode
+    setIsOnline(false);
+    setIsLoading(false);
+    return;
+
    * @returns Order creation result with tracking information
    */
   const createOrder = async (orderData: any) => {

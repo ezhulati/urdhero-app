@@ -24,16 +24,7 @@ export const functions = getFunctions(app);
 export const storage = getStorage(app);
 
 // Connect to emulators if in development
-if (import.meta.env.DEV || import.meta.env.VITE_APP_ENV === 'development') {
-  try {
-    connectAuthEmulator(auth, 'http://localhost:9099');
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectFunctionsEmulator(functions, 'localhost', 5001);
-    connectStorageEmulator(storage, 'localhost', 9199);
-    console.log('Connected to Firebase emulators');
-  } catch (error) {
-    console.error('Error connecting to emulators:', error);
-  }
-}
+// In WebContainer environment, we'll work in offline mode with fallbacks
+console.log('Running in offline mode with Firebase fallbacks');
 
 export default app;

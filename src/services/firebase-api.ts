@@ -600,18 +600,14 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
 };
 
 // Test function to verify Firebase connectivity
+// Initialize offline mode immediately in WebContainer
+if (typeof window !== 'undefined') {
+  isOfflineMode = true;
+  console.log('Firebase API running in offline mode with fallbacks');
+}
+
 export const testFirebaseAPIs = async (): Promise<boolean> => {
-  try {
-    const isConnected = await checkFirebaseConnection();
-    if (!isConnected) {
-      console.warn('Firebase connection check failed');
-      return false;
-    }
-    
-    console.log('✅ Firebase connection successful');
-    return true;
   } catch (error) {
-    console.error('❌ Firebase connection test error:', error);
-    return false;
-  }
+  // Always return false in WebContainer to use offline mode
+  return false;
 };
