@@ -1,7 +1,7 @@
 // Firebase configuration for the frontend
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, enableNetwork } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
@@ -23,7 +23,7 @@ export const db = getFirestore(app);
 export const functions = getFunctions(app);
 export const storage = getStorage(app);
 
-// Connect to emulators in development to prevent remote Firebase connection attempts
+// Configure Firebase for offline mode when emulators are not available
 if (import.meta.env.DEV) {
   try {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
@@ -32,7 +32,11 @@ if (import.meta.env.DEV) {
     connectStorageEmulator(storage, 'localhost', 9199);
     console.log('Connected to Firebase emulators');
   } catch (error) {
-    console.log('Firebase emulators not running, using offline mode');
+    console.log('Firebase emulators not running, disabling network access');
+    // Disable network access to prevent connection attempts
+    enableNetwork(db, false).catch(() => {
+      console.log('Network already disabled or error disabling network');
+    });
   }
 } else {
   console.log('Running in production mode');
