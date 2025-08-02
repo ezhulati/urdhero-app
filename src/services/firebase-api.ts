@@ -524,6 +524,11 @@ export const simulateOrderUpdates = (
 
 // Helper to create mock order data
 export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
+  // Handle undefined or null orderNumber
+  if (!orderNumber || typeof orderNumber !== 'string') {
+    orderNumber = `UR-${Date.now().toString().slice(-6)}`;
+  }
+
   // Parse order time from the order number if possible
   let orderTime;
   if (orderNumber.includes('-')) {
@@ -539,14 +544,20 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
 
   return {
     id: `mock-${orderNumber}`,
-    orderNumber,
-    status: 'new',
-    totalAmount: 1700,
-    items: [
-      { menuItemId: '1', name: 'Aperol Spritz', quantity: 2, price: 850, total: 1700 }
+    numriPorosise: orderNumber,
+    statusi: 'E_RE', // Use Albanian status format
+    shumaTotale: 1700,
+    artikujt: [
+      { 
+        id: '1', 
+        emriArtikulli: 'Aperol Spritz', 
+        sasia: 2, 
+        cmimiNjesi: 850, 
+        cmimiTotal: 1700 
+      }
     ],
     specialInstructions: '',
-    tableName: 'Table A15',
+    emriTavolines: 'Table A15',
     createdAt: orderTime,
     timestamps: {
       created: orderTime.toISOString(),
@@ -560,6 +571,15 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
       name: 'Beach Bar Durrës (Demo Mode)',
       slug: 'beach-bar-durres',
       type: 'beach_bar'
+    },
+    venueInfo: {
+      id: 'demo-venue-001',
+      name: 'Beach Bar Durrës (Demo Mode)',
+      slug: 'beach-bar-durres'
+    },
+    tableInfo: {
+      id: 'A15',
+      displayName: 'Table A15'
     }
   };
 };

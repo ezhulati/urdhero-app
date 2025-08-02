@@ -11,6 +11,13 @@ export const useOrderTracking = (orderNumber: string) => {
   
   const { getOrderByNumber, subscribeToOrder } = useFirebase();
 
+    // Don't proceed if no order number provided
+    if (!orderNumber || orderNumber.trim() === '') {
+      setError('Order number is required');
+      setLoading(false);
+      return;
+    }
+
   useEffect(() => {
     if (!orderNumber) return;
 
@@ -24,7 +31,8 @@ export const useOrderTracking = (orderNumber: string) => {
           setError('Order not found');
           setLoading(false);
           return;
-        }
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order details';
+        setError(errorMessage);
         
         // Set initial order state
         setOrder(orderDetails);

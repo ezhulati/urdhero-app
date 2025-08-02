@@ -197,6 +197,22 @@ export const OrderTrackingPage: React.FC = () => {
     );
   }
 
+  // Ensure order has required structure
+  if (!order.artikujt || !Array.isArray(order.artikujt)) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header title="Order Tracking" showBack onBackClick={handleBackClick} />
+        
+        <div className="max-w-md mx-auto px-4 pt-8">
+          <Card className="text-center p-8">
+            <LoadingSpinner size="lg" className="mb-4" text="Loading order data..." />
+            <p className="text-gray-600">Please wait while we fetch your order details</p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   const currentStepIndex = getCurrentStepIndex();
 
   return (
