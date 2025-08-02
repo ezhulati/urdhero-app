@@ -600,6 +600,9 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
 };
 
 // Test function to verify Firebase connectivity
+// Offline mode flag
+let isOfflineMode = false;
+
 // Initialize offline mode immediately in WebContainer
 if (typeof window !== 'undefined') {
   isOfflineMode = true;
