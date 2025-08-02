@@ -607,6 +607,8 @@ if (typeof window !== 'undefined') {
 }
 
 export const testFirebaseAPIs = async (): Promise<boolean> => {
+  try {
+    return await checkFirebaseConnection();
   } catch (error) {
   // Always return false in WebContainer to use offline mode
   return false;
