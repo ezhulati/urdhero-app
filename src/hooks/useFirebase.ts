@@ -104,11 +104,16 @@ export const useFirebase = () => {
    */
   const getOrderByNumber = async (orderNumber: string) => {
     try {
+      // Validate input
+      if (!orderNumber || typeof orderNumber !== 'string') {
+        throw new Error('Order number is required');
+      }
+      
       let result;
       try {
         // Try to use Firebase API first
         result = await orderAPI.getOrderStatus({ orderNumber });
-      } catch (apiError) {
+      } catch (apiError: any) {
         console.error('Error calling Firebase getOrderStatus function:', apiError);
         
         // Fall back to mock implementation
@@ -127,9 +132,10 @@ export const useFirebase = () => {
       }
       
       return result.order;
-    } catch (error: any) {
-      console.error('Error getting order:', error);
-      throw new Error(error.message || 'Failed to get order details');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get order details';
+      console.error('Error getting order:', errorMessage);
+      throw new Error(errorMessage);
     }
   };
 

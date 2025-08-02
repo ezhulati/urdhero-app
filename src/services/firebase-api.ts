@@ -224,8 +224,22 @@ export const orderAPI = {
     async ({ orderNumber }) => {
       console.log('Using mock order status for:', orderNumber);
       
+      // Validate orderNumber
+      if (!orderNumber || typeof orderNumber !== 'string') {
+        throw new Error('Invalid order number provided');
+      }
+      
       // Generate a stable status based on order number and time
-      const orderDate = new Date(parseInt(orderNumber.split('-')[1]) || Date.now() - 15 * 60000);
+      let orderDate;
+      try {
+        const parts = orderNumber.split('-');
+        const timestamp = parts.length > 1 ? parseInt(parts[1]) : null;
+        orderDate = timestamp ? new Date(timestamp) : new Date(Date.now() - 15 * 60000);
+      } catch (parseError) {
+        console.warn('Error parsing order number for date:', parseError);
+        orderDate = new Date(Date.now() - 15 * 60000);
+      }
+      
       const minutesElapsed = Math.floor((Date.now() - orderDate.getTime()) / 60000);
       
       // Determine status based on elapsed time
@@ -531,14 +545,15 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
 
   // Parse order time from the order number if possible
   let orderTime;
-  if (orderNumber.includes('-')) {
+  try {
     const parts = orderNumber.split('-');
     if (parts.length > 1 && !isNaN(parseInt(parts[1]))) {
       orderTime = new Date(parseInt(parts[1]));
     } else {
       orderTime = new Date(Date.now() - 15 * 60000);
     }
-  } else {
+  } catch (parseError) {
+    console.warn('Error parsing orderNumber in getMockOrderUpdate:', parseError);
     orderTime = new Date(Date.now() - 15 * 60000);
   }
 

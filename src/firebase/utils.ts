@@ -74,15 +74,16 @@ export function createCallableWithFallback<TData, TResult>(
       return result.data;
     } catch (error) {
       // Log the error with context
-      console.error(`Error calling Firebase function ${functionName}:`, {
-        error,
-        functionName,
-        dataPreview: JSON.stringify(data).substring(0, 100) + '...'
-      });
+      console.error(`Error calling Firebase function ${functionName}:`, error);
       
       // Fall back to local implementation
       console.log(`Falling back to local implementation for ${functionName}`);
-      return fallbackFn(data);
+      try {
+        return await fallbackFn(data);
+      } catch (fallbackError) {
+        console.error(`Fallback function also failed for ${functionName}:`, fallbackError);
+        throw new Error(`Both Firebase and fallback failed for ${functionName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   };
 }
