@@ -19,6 +19,7 @@ export const DeveloperBar: React.FC = () => {
     { path: '/order/TN-001', label: 'Order Tracking', icon: TrendingUp, category: 'Customer' },
     { path: '/restaurant/login', label: 'Staff Login', icon: Lock, category: 'Restaurant' },
     { path: '/restaurant/dashboard', label: 'Dashboard', icon: Users, category: 'Restaurant' },
+    { path: '/restaurant/dashboard?tab=menu', label: 'Menu Management', icon: Utensils, category: 'Restaurant' },
     { path: '/restaurant/kitchen', label: 'Kitchen', icon: ChefHat, category: 'Restaurant' },
     { path: '/restaurant-closed', label: 'Closed', icon: AlertTriangle, category: 'Error' },
     { path: '/network-error', label: 'Network Error', icon: AlertTriangle, category: 'Error' },

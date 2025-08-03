@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bell, Clock, CheckCircle, XCircle, TrendingUp, Users, LogOut, Settings, CreditCard, BarChart3, Package, Home, QrCode, Utensils } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/ui/Card';
@@ -23,6 +23,7 @@ export const RestaurantDashboardPage: React.FC = () => {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [activeTab, setActiveTab] = useState<'orders' | 'analytics' | 'inventory' | 'settings' | 'waiter-calls' | 'qr-codes' | 'menu'>('orders');
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [searchParams] = useSearchParams();
   const venueId = 'beach-bar-durres'; // In a real app, get this from auth state
 
   const { 
@@ -37,6 +38,12 @@ export const RestaurantDashboardPage: React.FC = () => {
   } = useRestaurantDashboard(venueId);
 
   useEffect(() => {
+    // Check if tab is specified in URL params
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['orders', 'menu', 'analytics', 'inventory', 'qr-codes', 'waiter-calls', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+    
     // Check authentication
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
