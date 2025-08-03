@@ -23,8 +23,52 @@ export const db = getFirestore(app);
 export const functions = getFunctions(app);
 export const storage = getStorage(app);
 
-// Configure Firebase for offline mode when emulators are not available
-if (import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE !== 'true') {
+// Configure Firebase based on environment variables
+if (import.meta.env.DEV) {
+  // Only connect to emulators if explicitly enabled
+  if (import.meta.env.VITE_FIREBASE_EMULATORS_ENABLED === 'true') {
+    (async () => {
+      try {
+        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+        connectFirestoreEmulator(db, 'localhost', 8080);
+        connectFunctionsEmulator(functions, 'localhost', 5001);
+        connectStorageEmulator(storage, 'localhost', 9199);
+        console.log('Connected to Firebase emulators');
+      } catch (error) {
+        console.error('Failed to connect to Firebase emulators:', error);
+        // Disable network access if emulator connection fails
+        try {
+          await enableNetwork(db, false);
+          console.log('Firestore network access disabled due to emulator connection failure');
+        } catch (networkError) {
+          console.log('Error disabling network access:', networkError);
+        }
+      }
+    })();
+  } else if (import.meta.env.VITE_DEMO_MODE === 'true') {
+    // In demo mode, disable all Firebase connections to prevent error messages
+    (async () => {
+      try {
+        await enableNetwork(db, false);
+        console.log('Demo mode: Firestore network access disabled');
+      } catch (error) {
+        console.log('Demo mode: Network already disabled or error:', error);
+      }
+    })();
+  } else {
+    // Development mode without emulators - disable network to prevent connection attempts
+    (async () => {
+      try {
+        await enableNetwork(db, false);
+        console.log('Development mode: Firestore network access disabled (emulators not enabled)');
+      } catch (error) {
+        console.log('Error disabling network access in development mode:', error);
+      }
+    })();
+  }
+} else {
+  console.log('Running in production mode - using production Firebase');
+}
   (async () => {
     try {
       connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
