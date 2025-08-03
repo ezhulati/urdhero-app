@@ -39,7 +39,7 @@ if (import.meta.env.DEV) {
         // Disable network access if emulator connection fails
         await enableNetwork(db, false);
           }
-    }
+    })();
     )
   }
 }
