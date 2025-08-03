@@ -7,7 +7,7 @@ import {
   firestoreListeners, 
   testFirebaseAPIs, 
   getMockOrderUpdate, 
-  subscribeToVenueOrders 
+  subscribeToVenueOrders as apiSubscribeToVenueOrders 
 } from '../services/firebase-api';
 import toast from 'react-hot-toast';
 
@@ -573,7 +573,7 @@ export const useFirebase = () => {
    * @returns Unsubscribe function
    */
   const subscribeToVenueOrders = (venueId: string, callback: (orders: any[]) => void) => {
-    return subscribeToVenueOrders(venueId, callback);
+    return apiSubscribeToVenueOrders(venueId, callback);
   };
 
   // Test Firebase connectivity
