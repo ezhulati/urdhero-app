@@ -1,35 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  AlertTriangle, 
-  Check, 
-  X, 
-  Coffee, 
-  Pizza, 
-  Utensils,
-  Sparkles,
-  Copy,
-  Download,
-  Upload,
-  Grid,
-  List,
-  SortAsc,
-  SortDesc,
-  Star,
-  TrendingUp,
-  Image,
-  Wand2,
-  RefreshCw,
-  Settings,
-  MoreHorizontal,
-  DragHandleDots2
-} from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, AlertTriangle, Check, X, Coffee, Pizza, Utensils, Sparkles, Copy, Download, Upload, Grid, List, SortAsc, SortDesc, Star, TrendingUp, Image, Wand2, RefreshCw, Settings, MoreHorizontal, CircleDot as DragHandleDots2 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button'; 
 import { Badge } from '../ui/Badge';
