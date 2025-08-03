@@ -37,6 +37,7 @@ if (import.meta.env.DEV) {
       } catch (error) {
         console.error('Failed to connect to Firebase emulators:', error);
         // Disable network access if emulator connection fails
+        await enableNetwork(db, false);
           }
     }
     )
