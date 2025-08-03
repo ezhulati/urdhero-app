@@ -24,7 +24,7 @@ export const functions = getFunctions(app);
 export const storage = getStorage(app);
 
 // Configure Firebase for offline mode when emulators are not available
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE !== 'true') {
   (async () => {
     try {
       connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
@@ -41,6 +41,16 @@ if (import.meta.env.DEV) {
       } catch (networkError) {
         console.log('Network already disabled or error disabling network');
       }
+    }
+  })();
+} else if (import.meta.env.VITE_DEMO_MODE === 'true') {
+  // In demo mode, disable all Firebase connections to prevent error messages
+  (async () => {
+    try {
+      await enableNetwork(db, false);
+      console.log('Demo mode: Firestore network access disabled');
+    } catch (error) {
+      console.log('Demo mode: Network already disabled');
     }
   })();
 } else {
