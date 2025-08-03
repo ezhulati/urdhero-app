@@ -38,5 +38,11 @@ if (import.meta.env.DEV) {
         console.error('Failed to connect to Firebase emulators:', error);
         // Disable network access if emulator connection fails
         try {
+        }
+      }
+    }
+    )
+  }
+}
 
 export default app;
