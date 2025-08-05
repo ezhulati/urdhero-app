@@ -1,7 +1,7 @@
 // Firebase configuration for the frontend
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, enableNetwork } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, enableNetwork, disableNetwork } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
@@ -22,6 +22,12 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
 export const storage = getStorage(app);
+
+// Disable network if running in demo mode
+if (import.meta.env.VITE_DEMO_MODE === 'true') {
+  disableNetwork(db);
+  console.log('Firebase Firestore network disabled - running in demo mode');
+}
 
 // Configure Firebase based on environment variables
 if (import.meta.env.DEV) {
