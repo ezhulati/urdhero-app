@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Zap,
   Globe,
-  Lock
+  Lock,
+  Download
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -312,7 +313,7 @@ export const SystemMonitoring: React.FC = () => {
                 size="sm"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Target: <0.1%</span>
+                <span>Target: &lt;0.1%</span>
                 <span>Industry: 0.3%</span>
               </div>
             </div>
@@ -328,7 +329,7 @@ export const SystemMonitoring: React.FC = () => {
                 size="sm"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Target: <300ms</span>
+                <span>Target: &lt;300ms</span>
                 <span>Limit: 500ms</span>
               </div>
             </div>
