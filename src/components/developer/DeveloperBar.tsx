@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Code, Home, QrCode, Menu, ShoppingCart, TrendingUp, Users, Lock, ChefHat, AlertTriangle, Utensils } from 'lucide-react';
+import { Code, Home, QrCode, Menu, ShoppingCart, TrendingUp, Users, Lock, ChefHat, AlertTriangle, Utensils, Crown, Building } from 'lucide-react';
 
 export const DeveloperBar: React.FC = () => {
   const location = useLocation();
