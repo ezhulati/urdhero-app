@@ -26,20 +26,27 @@ export const storage = getStorage(app);
 // Configure Firebase based on environment variables
 if (import.meta.env.DEV) {
   // Only connect to emulators if explicitly enabled
-  if (import.meta.env.VITE_FIREBASE_EMULATORS_ENABLED === 'true') {
+  if (import.meta.env.VITE_FIREBASE_EMULATORS_ENABLED === 'true' && import.meta.env.VITE_DEMO_MODE !== 'true') {
     (async () => {
       try {
-        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-        connectFirestoreEmulator(db, 'localhost', 8080);
-        connectFunctionsEmulator(functions, 'localhost', 5001);
-        connectStorageEmulator(storage, 'localhost', 9199);
-        console.log('Connected to Firebase emulators');
+        // Test if emulators are actually running before connecting
+        const testResponse = await fetch('http://localhost:8080', { signal: AbortSignal.timeout(2000) });
+        if (testResponse.ok || testResponse.status === 404) {
+          connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+          connectFirestoreEmulator(db, 'localhost', 8080);
+          connectFunctionsEmulator(functions, 'localhost', 5001);
+          connectStorageEmulator(storage, 'localhost', 9199);
+          console.log('Connected to Firebase emulators');
+        } else {
+          console.log('Firebase emulators not running, using demo mode');
+        }
       } catch (error) {
-        console.error('Failed to connect to Firebase emulators:', error);
-        // Disable network access if emulator connection fails
-        await enableNetwork(db, false);
+        console.log('Firebase emulators not accessible, using demo mode');
+        // Don't attempt any Firebase operations
       }
     })();
+  } else {
+    console.log('Running in demo mode - Firebase emulators disabled');
   }
 }
 
