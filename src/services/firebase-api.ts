@@ -518,25 +518,42 @@ export const subscribeToVenueOrders = (
   venueId: string, 
   callback: (orders: DocumentData[]) => void
 ): (() => void) => {
-  try {
-    const ordersRef = collection(db, 'orders');
-    const q = query(ordersRef, where('venueId', '==', venueId));
-    
-    return onSnapshot(q, (snapshot: QuerySnapshot) => {
-      const orders = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      callback(orders);
-    }, (error: Error) => {
-      console.error('Error listening to venue orders:', error);
-      // Provide empty data on error
-      callback([]);
-    });
-  } catch (error) {
-    console.error('Error setting up venue orders listener:', error);
-    return () => {}; // Return empty unsubscribe function
-  }
+  // First check if Firebase is available
+  checkFirebaseConnection().then(isAvailable => {
+    if (isAvailable) {
+      try {
+        // Query orders collection for this venue
+        const ordersRef = collection(db, 'orders');
+        const q = query(ordersRef, where('venueId', '==', venueId));
+        
+        return onSnapshot(q, (snapshot) => {
+          const orders = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          callback(orders);
+        }, (error) => {
+          console.error('Error listening to venue orders:', error);
+          // Fall back to mock updates on error
+          const mockUpdateInterval = simulateVenueOrders(venueId, callback);
+          return () => clearInterval(mockUpdateInterval);
+        });
+      } catch (error) {
+        console.error('Error setting up venue orders listener:', error);
+        // Fall back to mock updates
+        const mockUpdateInterval = simulateVenueOrders(venueId, callback);
+        return () => clearInterval(mockUpdateInterval);
+      }
+    } else {
+      console.log('Firebase unavailable, using mock venue orders');
+      // Use mock updates for demo mode
+      const mockUpdateInterval = simulateVenueOrders(venueId, callback);
+      return () => clearInterval(mockUpdateInterval);
+    }
+  });
+  
+  // Default unsubscribe function
+  return () => {};
 };
 
 // Helper function to simulate order updates for demo mode
@@ -629,6 +646,53 @@ export const getMockOrderUpdate = (orderNumber: string): DocumentData => {
       displayName: 'Table A15'
     }
   };
+};
+
+// Helper function to simulate venue orders for demo mode
+export const simulateVenueOrders = (
+  venueId: string, 
+  callback: (orders: DocumentData[]) => void
+): number => {
+  // Create initial mock orders
+  const mockOrders = [
+    {
+      id: 'mock-order-1',
+      orderNumber: 'UR-123456',
+      status: 'preparing',
+      totalAmount: 1700,
+      items: [
+        { menuItemId: '1', name: 'Aperol Spritz', quantity: 2, price: 850 }
+      ],
+      tableName: 'Table A15',
+      createdAt: new Date(Date.now() - 10 * 60000),
+      venueId
+    },
+    {
+      id: 'mock-order-2', 
+      orderNumber: 'UR-123457',
+      status: 'ready',
+      totalAmount: 1200,
+      items: [
+        { menuItemId: '2', name: 'Pizza Margherita', quantity: 1, price: 1200 }
+      ],
+      tableName: 'Table B12',
+      createdAt: new Date(Date.now() - 25 * 60000),
+      venueId
+    }
+  ];
+  
+  callback(mockOrders);
+  
+  // Simulate order updates every 30 seconds
+  return window.setInterval(() => {
+    // Randomly update order statuses
+    const updatedOrders = mockOrders.map(order => ({
+      ...order,
+      status: Math.random() > 0.7 ? 'served' : order.status
+    }));
+    
+    callback(updatedOrders);
+  }, 30000);
 };
 
 // Test function to verify Firebase connectivity
