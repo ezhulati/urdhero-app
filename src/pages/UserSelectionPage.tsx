@@ -77,6 +77,27 @@ export const UserSelectionPage: React.FC = () => {
     }
   ];
 
+  const adminScenarios = [
+    {
+      id: 'platform-admin',
+      title: 'Platform Administrator',
+      description: 'System-wide monitoring and management',
+      icon: Crown,
+      color: 'from-purple-600 to-purple-700',
+      path: '/admin/dashboard',
+      badge: 'Super Admin'
+    },
+    {
+      id: 'venue-registration',
+      title: 'Venue Registration',
+      description: 'New restaurant onboarding process',
+      icon: Users,
+      color: 'from-green-600 to-green-700',
+      path: '/venue/register',
+      badge: 'Onboarding'
+    }
+  ];
+
   const errorScenarios = [
     {
       id: 'invalid-qr',
@@ -433,6 +454,49 @@ export const UserSelectionPage: React.FC = () => {
                     onClick={() => handleNavigation(scenario.path)}
                   >
                     Try This Flow
+                  </Button>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Admin & System Scenarios */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin & System Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {adminScenarios.map((scenario) => {
+              const Icon = scenario.icon;
+              return (
+                <Card
+                  key={scenario.id}
+                  hover
+                  className="p-6 transition-all duration-300 border-purple-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${scenario.color} rounded-xl flex items-center justify-center text-white shadow-lg`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <Badge variant="gradient" size="sm">
+                      {scenario.badge}
+                    </Badge>
+                  </div>
+                  
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    {scenario.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-4">
+                    {scenario.description}
+                  </p>
+                  
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleNavigation(scenario.path)}
+                  >
+                    Access {scenario.title}
                   </Button>
                 </Card>
               );

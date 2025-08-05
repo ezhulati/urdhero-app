@@ -20,6 +20,8 @@ import { RestaurantLoginPage } from './pages/restaurant/LoginPage';
 import { RestaurantDashboardPage } from './pages/restaurant/DashboardPage';
 import { KitchenDisplayPage } from './pages/restaurant/KitchenDisplayPage';
 import { QRManagementPage } from './pages/restaurant/QRManagementPage';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { VenueRegistration } from './components/venue/VenueRegistration';
 
 // Error Pages
 import { RestaurantClosedPage } from './pages/error/RestaurantClosedPage';
@@ -110,6 +112,12 @@ function App() {
               <Route path="/restaurant/dashboard" element={<RestaurantDashboardPage />} />
               <Route path="/restaurant/kitchen" element={<KitchenDisplayPage />} />
               <Route path="/restaurant/qr-management" element={<QRManagementPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              
+              {/* Venue Registration */}
+              <Route path="/venue/register" element={<VenueRegistration />} />
               
               {/* Error Pages */}
               <Route path="/restaurant-closed" element={<RestaurantClosedPage />} />

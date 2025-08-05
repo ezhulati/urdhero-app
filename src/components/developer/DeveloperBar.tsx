@@ -21,6 +21,8 @@ export const DeveloperBar: React.FC = () => {
     { path: '/restaurant/dashboard', label: 'Dashboard', icon: Users, category: 'Restaurant' },
     { path: '/restaurant/dashboard?tab=menu', label: 'Menu Management', icon: Utensils, category: 'Restaurant' },
     { path: '/restaurant/kitchen', label: 'Kitchen', icon: ChefHat, category: 'Restaurant' },
+    { path: '/admin/dashboard', label: 'Platform Admin', icon: Crown, category: 'Admin' },
+    { path: '/venue/register', label: 'Venue Registration', icon: Building, category: 'Admin' },
     { path: '/restaurant-closed', label: 'Closed', icon: AlertTriangle, category: 'Error' },
     { path: '/network-error', label: 'Network Error', icon: AlertTriangle, category: 'Error' },
   ];
@@ -29,6 +31,7 @@ export const DeveloperBar: React.FC = () => {
     'Main': '#3B82F6',
     'Customer': '#10B981',
     'Restaurant': '#F59E0B',
+    'Admin': '#8B5CF6',
     'Error': '#EF4444'
   };
 

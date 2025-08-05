@@ -394,6 +394,38 @@ export const orderAPI = {
         menuItemId: data.menuItemId
       };
     }
+  ),
+
+  /**
+   * Register a new venue
+   * @param venueData Venue registration data
+   * @returns Registration result
+   */
+  registerVenue: createCallableWithFallback<
+    any,
+    { success: boolean; venueId: string; slug: string; adminUserId: string }
+  >(
+    'registerVenue',
+    async (venueData) => {
+      console.log('Using mock venue registration with data:', venueData);
+      
+      // Simulate registration process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const venueId = `venue-${Date.now()}`;
+      const adminUserId = `admin-${Date.now()}`;
+      const slug = venueData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      return {
+        success: true,
+        venueId,
+        slug,
+        adminUserId
+      };
+    }
   )
 };
 

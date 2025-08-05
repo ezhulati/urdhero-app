@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Urdhëro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 28rem;
+            width: 100%;
+        }
+        
+        .logo {
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, #1d4ed8, #312e81);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .description {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .offline-icon {
+            width: 1rem;
+            height: 1rem;
+            background: #f59e0b;
+            border-radius: 50%;
+        }
+        
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        
+        .features {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .features h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .check-icon {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">U</div>
+        
+        <h1 class="title">You're Offline</h1>
+        
+        <p class="description">
+            It looks like you don't have an internet connection right now. 
+            Don't worry - Urdhëro works offline too!
+        </p>
+        
+        <div class="status">
+            <div class="offline-icon"></div>
+            <span>No Internet Connection</span>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-primary" onclick="window.location.reload()">
+                Try Again
+            </button>
+            <a href="/" class="btn btn-secondary">
+                Go to Home
+            </a>
+        </div>
+        
+        <div class="features">
+            <h3>What you can still do offline:</h3>
+            <ul class="feature-list">
+                <li>
+                    <span class="check-icon">✓</span>
+                    Browse previously viewed menus
+                </li>
+                <li>
+                    <span class="check-icon">✓</span>
+                    View your order history
+                </li>
+                <li>
+                    <span class="check-icon">✓</span>
+                    Access your loyalty points
+                </li>
+                <li>
+                    <span class="check-icon">✓</span>
+                    Prepare orders (will sync when online)
+                </li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 Urdhëro Platform - Made in Albania 🇦🇱</p>
+            <p>Your orders will be automatically submitted when you're back online</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-retry connection every 30 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }, 30000);
+        
+        // Listen for online event
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+        
+        // Update status based on connection
+        function updateConnectionStatus() {
+            const statusElement = document.querySelector('.status');
+            if (navigator.onLine) {
+                statusElement.innerHTML = '<div style="width: 1rem; height: 1rem; background: #10b981; border-radius: 50%;"></div><span>Connection Restored</span>';
+                statusElement.style.background = '#d1fae5';
+                statusElement.style.color = '#065f46';
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        }
+        
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+    </script>
+</body>
+</html>
