@@ -9,7 +9,6 @@ import { UrdheroLogo, UrdheroLogoCompact } from '../ui/UrdheroLogo';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { CustomerAuth } from '../auth/CustomerAuth';
 import { CustomerProfile } from '../profile/CustomerProfile';
-import { useTranslation } from '../../App';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { useCart } from '../../hooks/useCart';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
