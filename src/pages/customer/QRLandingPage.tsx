@@ -24,7 +24,7 @@ export const QRLandingPage: React.FC = () => {
   const [table, setTable] = useState<Table | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { callWaiter, isWaiterCalled, getCallInfo } = useWaiterCall();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const restaurantSlug = searchParams.get('r');
   const tableCode = searchParams.get('t');
