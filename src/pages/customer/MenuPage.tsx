@@ -19,6 +19,7 @@ export const MenuPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useCustomerAuth();
+  const { t = (key: string) => key } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [table, setTable] = useState<Table | null>(null);
