@@ -12,6 +12,7 @@ import { MenuItemSkeleton } from '../../components/ui/SkeletonLoader';
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { MenuItem, Restaurant, Table, MenuCategory } from '../../types';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
+import { useTranslation } from '../../contexts/TranslationContext';
 import toast from 'react-hot-toast';
 
 export const MenuPage: React.FC = () => {

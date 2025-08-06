@@ -12,6 +12,7 @@ import { AccountCreationPrompt } from '../../components/auth/AccountCreationProm
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCart } from '../../hooks/useCart';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
+import { useTranslation } from '../../contexts/TranslationContext';
 import { useLoyalty } from '../../hooks/useLoyalty';
 import { Restaurant, PaymentMethod } from '../../types';
 import toast from 'react-hot-toast';

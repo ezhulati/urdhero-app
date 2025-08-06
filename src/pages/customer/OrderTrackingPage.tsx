@@ -10,6 +10,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
+import { useTranslation } from '../../contexts/TranslationContext';
 import { useOrderTracking } from '../../hooks/useOrderTracking';
 import { OrderStatus } from '../../types';
 import toast from 'react-hot-toast';

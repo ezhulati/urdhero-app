@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Check, ChevronDown } from 'lucide-react';
-import { useTranslation } from '../../App';
+import { useTranslation } from '../../contexts/TranslationContext';
 import { Card } from './Card';
 
 interface LanguageSelectorProps {

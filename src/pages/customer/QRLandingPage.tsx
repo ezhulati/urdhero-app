@@ -7,7 +7,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Header } from '../../components/layout/Header';
 import { Badge } from '../../components/ui/Badge';
 import { useWaiterCall } from '../../hooks/useWaiterCall';
-import { useTranslation } from '../../App';
+import { useTranslation } from '../../contexts/TranslationContext';
 import { LanguageSelector } from '../../components/ui/LanguageSelector';
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';

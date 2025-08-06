@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Header } from '../../components/layout/Header';
 import { useRestaurantAuth } from '../../hooks/useRestaurantAuth';
-import { useTranslation } from '../../App';
+import { useTranslation } from '../../contexts/TranslationContext';
 import toast from 'react-hot-toast';
 
 export const RestaurantLoginPage: React.FC = () => {

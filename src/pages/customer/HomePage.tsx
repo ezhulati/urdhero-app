@@ -7,7 +7,7 @@ import { Badge } from '../../components/ui/Badge';
 import { UrdheroLogo } from '../../components/ui/UrdheroLogo';
 import { LanguageSelector } from '../../components/ui/LanguageSelector';
 import { QRScanner } from '../../components/qr/QRScanner';
-import { useTranslation } from '../../App';
+import { useTranslation } from '../../contexts/TranslationContext';
 import { parseQRCode } from '../../utils/qrParser';
 import toast from 'react-hot-toast';
 
