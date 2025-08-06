@@ -5,12 +5,15 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { UrdheroLogo } from '../../components/ui/UrdheroLogo';
+import { LanguageSelector } from '../../components/ui/LanguageSelector';
 import { QRScanner } from '../../components/qr/QRScanner';
+import { useTranslation } from '../../App';
 import { parseQRCode } from '../../utils/qrParser';
 import toast from 'react-hot-toast';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showScanner, setShowScanner] = useState(false);
   const isDev = !import.meta.env.PROD;
 
@@ -37,6 +40,11 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Language Selector - Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSelector variant="compact" />
+      </div>
+
       {/* Hero Section */}
       <div className="max-w-md mx-auto px-4 pt-8 pb-6">
         <div className="text-center">
@@ -53,15 +61,15 @@ export const HomePage: React.FC = () => {
           </h1>
           
           <p className="text-lg text-gray-700 leading-relaxed mb-2 font-medium">
-            Order directly from your table
+            {t('home.tagline')}
           </p>
           
           <p className="text-sm text-blue-700 font-semibold mb-2">
-            #1 Restaurant Platform in Albania
+            {t('home.subtitle')}
           </p>
           
           <p className="text-xs text-gray-500 mb-8">
-            🇦🇱 Made in Albania • 150+ Partner Restaurants
+            {t('home.madeInAlbania')} • {t('home.partnerCount')}
           </p>
 
           {/* QR Scanner Button */}
@@ -74,7 +82,7 @@ export const HomePage: React.FC = () => {
               onClick={() => setShowScanner(true)}
               data-testid="qr-scanner-button"
             >
-              Scan QR Code
+              {t('nav.scanQR')}
             </Button>
             
             {isDev && (
@@ -84,7 +92,7 @@ export const HomePage: React.FC = () => {
                 className="w-full text-gray-600"
                 onClick={handleDemoQR}
               >
-                🔧 Demo QR (Development)
+                🔧 {t('home.demoQR')}
               </Button>
             )}
           </div>
@@ -100,9 +108,9 @@ export const HomePage: React.FC = () => {
                 <Zap className="w-6 h-6 text-blue-800" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Instant & Fast</h3>
+                <h3 className="font-semibold text-gray-900">{t('home.features.instant.title')}</h3>
                 <p className="text-sm text-gray-600">
-                  Scan QR code and order immediately - zero waiting
+                  {t('home.features.instant.description')}
                 </p>
               </div>
             </div>
@@ -114,9 +122,9 @@ export const HomePage: React.FC = () => {
                 <Shield className="w-6 h-6 text-indigo-800" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">100% Secure</h3>
+                <h3 className="font-semibold text-gray-900">{t('home.features.secure.title')}</h3>
                 <p className="text-sm text-gray-600">
-                  Secure payments and real-time order tracking
+                  {t('home.features.secure.description')}
                 </p>
               </div>
             </div>
@@ -128,9 +136,9 @@ export const HomePage: React.FC = () => {
                 <Heart className="w-6 h-6 text-emerald-800" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Easy to Use</h3>
+                <h3 className="font-semibold text-gray-900">{t('home.features.easy.title')}</h3>
                 <p className="text-sm text-gray-600">
-                  Simple and intuitive interface for all ages
+                  {t('home.features.easy.description')}
                 </p>
               </div>
             </div>
@@ -149,16 +157,16 @@ export const HomePage: React.FC = () => {
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-xl font-bold">150+</div>
-                <div className="text-blue-200 text-xs">Restaurants</div>
+                <div className="text-xl font-bold">{t('home.stats.restaurants')}</div>
+                <div className="text-blue-200 text-xs">{t('common.restaurant')}</div>
               </div>
               <div>
-                <div className="text-xl font-bold">50K+</div>
-                <div className="text-blue-200 text-xs">Orders</div>
+                <div className="text-xl font-bold">{t('home.stats.orders')}</div>
+                <div className="text-blue-200 text-xs">{t('common.order')}</div>
               </div>
               <div>
-                <div className="text-xl font-bold">98%</div>
-                <div className="text-blue-200 text-xs">Satisfaction</div>
+                <div className="text-xl font-bold">{t('home.stats.satisfaction')}</div>
+                <div className="text-blue-200 text-xs">{t('home.stats.satisfactionLabel')}</div>
               </div>
             </div>
           </div>
@@ -172,15 +180,15 @@ export const HomePage: React.FC = () => {
             <div className="flex items-center justify-center space-x-4 text-xs text-gray-600">
               <div className="flex items-center">
                 <Shield className="w-4 h-4 mr-1 text-green-600" />
-                SSL Secure
+                {t('home.trust.ssl')}
               </div>
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-1 text-blue-600" />
-                24/7 Support
+                {t('home.trust.support')}
               </div>
               <div className="flex items-center">
                 <Heart className="w-4 h-4 mr-1 text-red-500" />
-                Made in 🇦🇱
+                {t('home.trust.madeIn')}
               </div>
             </div>
           </div>
@@ -190,10 +198,10 @@ export const HomePage: React.FC = () => {
       {/* Footer */}
       <div className="max-w-md mx-auto px-4 pb-8 text-center">
         <p className="text-sm text-gray-500 mb-1">
-          © 2024 Urdhëro Platform. All rights reserved.
+          {t('home.footer.copyright')}
         </p>
         <p className="text-xs text-gray-400">
-          🇦🇱 Made with love in Albania
+          {t('home.footer.madeWithLove')}
         </p>
       </div>
 

@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { useLanguage, Language } from './hooks/useTranslation';
-import { getTranslation } from './translations';
+import { useLanguage, Language, languages } from './hooks/useTranslation';
+import { getTranslation, translations } from './translations';
 
 // Components
 import { InstallPrompt } from './components/ui/InstallPrompt';
@@ -38,11 +38,12 @@ interface TranslationContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string, params?: Record<string, any>) => string;
+  languages: typeof languages;
 }
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
-export const useTranslation = () => {
+export const useTranslation = (): TranslationContextType => {
   const context = useContext(TranslationContext);
   if (!context) {
     throw new Error('useTranslation must be used within a TranslationProvider');
@@ -58,7 +59,7 @@ const TranslationProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <TranslationContext.Provider value={{ language, setLanguage, t }}>
+    <TranslationContext.Provider value={{ language, setLanguage, t, languages }}>
       {children}
     </TranslationContext.Provider>
   );

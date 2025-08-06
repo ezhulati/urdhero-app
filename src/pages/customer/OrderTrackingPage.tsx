@@ -74,27 +74,27 @@ export const OrderTrackingPage: React.FC = () => {
   const orderSteps = [
     { 
       key: OrderStatus.E_RE, 
-      label: 'New order', 
+      label: t('orderTracking.progress.newOrder'), 
       icon: Clock,
-      description: 'Order successfully placed' 
+      description: t('orderTracking.progress.descriptions.new') 
     },
     { 
       key: OrderStatus.PRANUAR, 
-      label: 'Accepted', 
+      label: t('orderTracking.progress.accepted'), 
       icon: CheckCircle,
-      description: 'Venue accepted your order' 
+      description: t('orderTracking.progress.descriptions.accepted') 
     },
     { 
       key: OrderStatus.DUKE_U_PERGATITUR, 
-      label: 'Preparing', 
+      label: t('orderTracking.progress.preparing'), 
       icon: ChefHat,
-      description: 'Kitchen is preparing your order' 
+      description: t('orderTracking.progress.descriptions.preparing') 
     },
     { 
       key: OrderStatus.GATI, 
-      label: 'Ready', 
+      label: t('orderTracking.progress.ready'), 
       icon: Utensils,
-      description: 'Order is ready for service' 
+      description: t('orderTracking.progress.descriptions.ready') 
     }
   ];
 

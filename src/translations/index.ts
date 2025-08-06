@@ -27,6 +27,47 @@ export interface Translations {
     euro: string;
     tryAgain: string;
     refresh: string;
+    show: string;
+    hide: string;
+    unknown: string;
+  };
+
+  // Home page
+  home: {
+    tagline: string;
+    subtitle: string;
+    madeInAlbania: string;
+    partnerCount: string;
+    demoQR: string;
+    features: {
+      instant: {
+        title: string;
+        description: string;
+      };
+      secure: {
+        title: string;
+        description: string;
+      };
+      easy: {
+        title: string;
+        description: string;
+      };
+    };
+    stats: {
+      restaurants: string;
+      orders: string;
+      satisfaction: string;
+      satisfactionLabel: string;
+    };
+    trust: {
+      ssl: string;
+      support: string;
+      madeIn: string;
+    };
+    footer: {
+      copyright: string;
+      madeWithLove: string;
+    };
   };
 
   // Navigation
@@ -72,6 +113,7 @@ export interface Translations {
     searchPlaceholder: string;
     filters: string;
     clearAll: string;
+    activeFilters: string;
     categories: {
       all: string;
     };
@@ -119,6 +161,8 @@ export interface Translations {
   // Cart
   cart: {
     title: string;
+    items: string;
+    estimatedTime: string;
     empty: {
       title: string;
       description: string;
@@ -210,6 +254,8 @@ export interface Translations {
   auth: {
     login: string;
     signup: string;
+    staffLogin: string;
+    staffLoginDescription: string;
     email: string;
     password: string;
     name: string;
@@ -358,7 +404,48 @@ const sq: Translations = {
     minutes: 'min',
     euro: '€',
     tryAgain: 'Provo Përsëri',
-    refresh: 'Rifresko'
+    refresh: 'Rifresko',
+    show: 'Shfaq',
+    hide: 'Fshih',
+    unknown: 'I panjohur'
+  },
+
+  // Home page
+  home: {
+    tagline: 'Urdhëro direkt nga tavolina',
+    subtitle: 'Platforma #1 për Restorante në Shqipëri',
+    madeInAlbania: '🇦🇱 Krijuar në Shqipëri',
+    partnerCount: '150+ Restorante Partnere',
+    demoQR: 'Demo QR (Zhvillim)',
+    features: {
+      instant: {
+        title: 'I Shpejtë & I Menjëhershëm',
+        description: 'Skano QR kodin dhe urdhëro menjëherë - zero pritje'
+      },
+      secure: {
+        title: '100% i Sigurt',
+        description: 'Pagesa të sigurta dhe ndjekje në kohë reale'
+      },
+      easy: {
+        title: 'I Lehtë për Përdorim',
+        description: 'Ndërfaqe e thjeshtë dhe intuitive për të gjitha moshat'
+      }
+    },
+    stats: {
+      restaurants: '150+',
+      orders: '50K+',
+      satisfaction: '98%',
+      satisfactionLabel: 'Kënaqësi'
+    },
+    trust: {
+      ssl: 'SSL i Sigurt',
+      support: 'Mbështetje 24/7',
+      madeIn: 'Krijuar në 🇦🇱'
+    },
+    footer: {
+      copyright: '© 2024 Urdhëro Platform. Të gjitha të drejtat e rezervuara.',
+      madeWithLove: '🇦🇱 Krijuar me dashuri në Shqipëri'
+    }
   },
   nav: {
     scanQR: 'Skano QR',
@@ -398,6 +485,7 @@ const sq: Translations = {
     searchPlaceholder: 'Kërko në menu...',
     filters: 'Filtrat',
     clearAll: 'Pastro të gjitha',
+    activeFilters: 'Aktivë',
     categories: {
       all: 'Të gjitha'
     },
@@ -443,6 +531,8 @@ const sq: Translations = {
   },
   cart: {
     title: 'Porosia',
+    items: 'artikuj',
+    estimatedTime: 'Koha e vlerësuar',
     empty: {
       title: 'Porosia është bosh',
       description: 'Kur të shtosh artikuj nga menuja, ato do të shfaqen këtu.',
@@ -526,6 +616,8 @@ const sq: Translations = {
   auth: {
     login: 'Hyr në Urdhëro',
     signup: 'Regjistrohuni në Urdhëro',
+    staffLogin: 'Hyrje Stafi',
+    staffLoginDescription: 'Qasje në sistemin e menaxhimit të restorantit',
     email: 'Email',
     password: 'Fjalëkalimi',
     name: 'Emri i plotë',
@@ -668,7 +760,48 @@ const en: Translations = {
     minutes: 'min',
     euro: '€',
     tryAgain: 'Try Again',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    show: 'Show',
+    hide: 'Hide',
+    unknown: 'Unknown'
+  },
+
+  // Home page
+  home: {
+    tagline: 'Order directly from your table',
+    subtitle: '#1 Restaurant Platform in Albania',
+    madeInAlbania: '🇦🇱 Made in Albania',
+    partnerCount: '150+ Partner Restaurants',
+    demoQR: 'Demo QR (Development)',
+    features: {
+      instant: {
+        title: 'Instant & Fast',
+        description: 'Scan QR code and order immediately - zero waiting'
+      },
+      secure: {
+        title: '100% Secure',
+        description: 'Secure payments and real-time order tracking'
+      },
+      easy: {
+        title: 'Easy to Use',
+        description: 'Simple and intuitive interface for all ages'
+      }
+    },
+    stats: {
+      restaurants: '150+',
+      orders: '50K+',
+      satisfaction: '98%',
+      satisfactionLabel: 'Satisfaction'
+    },
+    trust: {
+      ssl: 'SSL Secure',
+      support: '24/7 Support',
+      madeIn: 'Made in 🇦🇱'
+    },
+    footer: {
+      copyright: '© 2024 Urdhëro Platform. All rights reserved.',
+      madeWithLove: '🇦🇱 Made with love in Albania'
+    }
   },
   nav: {
     scanQR: 'Scan QR',
@@ -708,6 +841,7 @@ const en: Translations = {
     searchPlaceholder: 'Search menu...',
     filters: 'Filters',
     clearAll: 'Clear all',
+    activeFilters: 'Active',
     categories: {
       all: 'All'
     },
@@ -753,6 +887,8 @@ const en: Translations = {
   },
   cart: {
     title: 'Cart',
+    items: 'items',
+    estimatedTime: 'Estimated time',
     empty: {
       title: 'Cart is empty',
       description: 'When you add items from menu, they will appear here.',
@@ -836,6 +972,8 @@ const en: Translations = {
   auth: {
     login: 'Login to Urdhëro',
     signup: 'Sign Up for Urdhëro',
+    staffLogin: 'Staff Login',
+    staffLoginDescription: 'Access restaurant management system',
     email: 'Email',
     password: 'Password',
     name: 'Full name',

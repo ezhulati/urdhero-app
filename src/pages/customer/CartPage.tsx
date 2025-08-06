@@ -366,11 +366,11 @@ export const CartPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-semibold text-gray-900 text-lg">
-                  {getTotalItems()} items
+                  {getTotalItems()} {t('cart.items')}
                 </div>
                 <div className="text-sm text-gray-600 flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  Estimated time: ~{estimatedTime} min
+                  {t('cart.estimatedTime')}: ~{estimatedTime} {t('common.minutes')}
                 </div>
               </div>
               <div className="text-right">
@@ -383,7 +383,7 @@ export const CartPage: React.FC = () => {
                 >
                   {formatPrice(finalTotal)} €
                 </motion.div>
-                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-sm text-gray-600">{t('common.total')}</div>
               </div>
             </div>
           </Card>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Check, ChevronDown } from 'lucide-react';
-import { useLanguage, languages } from '../../hooks/useTranslation';
+import { useTranslation } from '../../App';
 import { Card } from './Card';
 
 interface LanguageSelectorProps {
@@ -13,7 +13,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   variant = 'dropdown',
   className = '' 
 }) => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, languages } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const currentLanguage = languages.find(l => l.code === language);

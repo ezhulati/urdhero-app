@@ -7,8 +7,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Header } from '../../components/layout/Header';
 import { Badge } from '../../components/ui/Badge';
 import { useWaiterCall } from '../../hooks/useWaiterCall';
-import { useLanguage } from '../../hooks/useTranslation';
-import { getTranslation } from '../../translations';
+import { useTranslation } from '../../App';
 import { LanguageSelector } from '../../components/ui/LanguageSelector';
 import { CustomerStatusBanner } from '../../components/ui/CustomerStatusBanner';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
@@ -25,14 +24,12 @@ export const QRLandingPage: React.FC = () => {
   const [table, setTable] = useState<Table | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { callWaiter, isWaiterCalled, getCallInfo } = useWaiterCall();
-  const { language } = useLanguage();
+  const { t } = useTranslation();
 
   const restaurantSlug = searchParams.get('r');
   const tableCode = searchParams.get('t');
   const isReturning = searchParams.get('returning') === 'true';
   const isWalkIn = tableCode === 'walk-in';
-
-  const t = (key: string, params?: Record<string, any>) => getTranslation(language, key, params);
 
   useEffect(() => {
     // Monitor network status

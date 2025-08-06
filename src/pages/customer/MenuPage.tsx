@@ -399,7 +399,7 @@ export const MenuPage: React.FC = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search menu..."
+            placeholder={t('menu.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
@@ -419,10 +419,10 @@ export const MenuPage: React.FC = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
               <Filter className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-900">Filters</span>
+              <span className="font-medium text-gray-900">{t('menu.filters')}</span>
               {hasActiveFilters && (
                 <Badge variant="primary" size="sm">
-                  Active
+                  {t('menu.activeFilters')}
                 </Badge>
               )}
             </div>
@@ -434,7 +434,7 @@ export const MenuPage: React.FC = () => {
                 className="text-gray-600"
               >
                 <SlidersHorizontal className="w-4 h-4 mr-1" />
-                {showFilters ? 'Hide' : 'Show'}
+                {showFilters ? t('common.hide') : t('common.show')}
               </Button>
               {hasActiveFilters && (
                 <Button
@@ -443,7 +443,7 @@ export const MenuPage: React.FC = () => {
                   onClick={clearAllFilters}
                   className="text-blue-600"
                 >
-                  Clear
+                  {t('menu.clearAll')}
                 </Button>
               )}
             </div>
@@ -459,7 +459,7 @@ export const MenuPage: React.FC = () => {
                   : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
-              All
+              {t('menu.categories.all')}
             </button>
             {categories.map(category => (
               <button

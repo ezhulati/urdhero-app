@@ -9,10 +9,9 @@ import { UrdheroLogo, UrdheroLogoCompact } from '../ui/UrdheroLogo';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { CustomerAuth } from '../auth/CustomerAuth';
 import { CustomerProfile } from '../profile/CustomerProfile';
+import { useTranslation } from '../../App';
 import { useCart } from '../../hooks/useCart';
 import { useCustomerAuth } from '../../hooks/useCustomerAuth';
-import { useLanguage } from '../../hooks/useTranslation';
-import { getTranslation } from '../../translations';
 
 interface HeaderProps {
   title?: string;
@@ -41,14 +40,12 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { getTotalItems } = useCart();
   const { user, isAuthenticated, logout } = useCustomerAuth();
-  const { language } = useLanguage();
+  const { t } = useTranslation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
   const cartItemCount = getTotalItems();
-
-  const t = (key: string) => getTranslation(language, key);
 
   const handleBackClick = () => {
     if (onBackClick) {
@@ -136,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
               
               {/* Language Selector */}
               {showLanguage && (
-                <LanguageSelector variant="compact" />
+                <LanguageSelector />
               )}
               
               {/* User Account Button (only on customer pages) */}

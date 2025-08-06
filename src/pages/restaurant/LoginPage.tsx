@@ -6,11 +6,13 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Header } from '../../components/layout/Header';
 import { useRestaurantAuth } from '../../hooks/useRestaurantAuth';
+import { useTranslation } from '../../App';
 import toast from 'react-hot-toast';
 
 export const RestaurantLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const {
     login, 
     currentUser, 
@@ -135,10 +137,10 @@ export const RestaurantLoginPage: React.FC = () => {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Staff Login
+              {t('auth.staffLogin')}
             </h1>
             <p className="text-gray-600">
-              Access restaurant management system
+              {t('auth.staffLoginDescription')}
             </p>
 
             {/* Demo Mode Indicator */}
