@@ -23,12 +23,6 @@ export const db = getFirestore(app);
 export const functions = getFunctions(app);
 export const storage = getStorage(app);
 
-// Disable network if running in demo mode
-if (import.meta.env.VITE_DEMO_MODE === 'true') {
-  disableNetwork(db);
-  console.log('Firebase Firestore network disabled - running in demo mode');
-}
-
 // Configure Firebase based on environment variables
 if (import.meta.env.DEV) {
   // Only connect to emulators if explicitly enabled
@@ -45,15 +39,21 @@ if (import.meta.env.DEV) {
           console.log('Connected to Firebase emulators');
         } else {
           console.log('Firebase emulators not running, using demo mode');
+          disableNetwork(db);
         }
       } catch (error) {
         console.log('Firebase emulators not accessible, using demo mode');
-        // Don't attempt any Firebase operations
+        disableNetwork(db);
       }
     })();
   } else {
     console.log('Running in demo mode - Firebase emulators disabled');
+    disableNetwork(db);
   }
+} else if (import.meta.env.VITE_DEMO_MODE === 'true') {
+  // Disable network if running in demo mode in production
+  disableNetwork(db);
+  console.log('Firebase Firestore network disabled - running in demo mode');
 }
 
 export default app;
