@@ -19,6 +19,7 @@ export const OrderTrackingPage: React.FC = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useCustomerAuth();
+  const { t } = useTranslation();
   const { order, loading, error, progress, estimatedTime, callWaiter } = useOrderTracking(orderNumber || '');
   const [showFeedback, setShowFeedback] = useState(false);
   const [rating, setRating] = useState(0);
